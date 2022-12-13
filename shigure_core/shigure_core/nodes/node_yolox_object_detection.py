@@ -11,11 +11,11 @@ from bbox_ex_msgs.msg import BoundingBoxes
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
 from shigure_core.nodes.node_image_preview import ImagePreviewNode
-from shigure_core.nodes.object_detection.color_image_frame import ColorImageFrame
-from shigure_core.nodes.object_detection.color_image_frames import ColorImageFrames
-from shigure_core.nodes.object_detection.frame_object import FrameObject
-from shigure_core.nodes.object_detection.judge_params import JudgeParams
-from shigure_core.nodes.object_detection.logic import ObjectDetectionLogic
+from shigure_core.nodes.yolox_object_detection.color_image_frame import ColorImageFrame
+from shigure_core.nodes.yolox_object_detection.color_image_frames import ColorImageFrames
+from shigure_core.nodes.yolox_object_detection.frame_object import FrameObject
+from shigure_core.nodes.yolox_object_detection.judge_params import JudgeParams
+from shigure_core.nodes.yolox_object_detection.logic import ObjectDetectionLogic
 
 class YoloxObjectDetectionNode(ImagePreviewNode):
   object_list: list
@@ -54,7 +54,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
       [yolox_bbox_subscriber, color_subscriber, depth_camera_info_subscriber], 1000)
     self.time_synchronizer.registerCallback(self.callback)
     
-    self.object_detection_logic = ObjectDetectionLogic()
+    self.yolox_object_detection_logic = ObjectDetectionLogic()
     
     self.frame_object_list: List[FrameObject] = []
     self._color_img_buffer: List[np.ndarray] = []
