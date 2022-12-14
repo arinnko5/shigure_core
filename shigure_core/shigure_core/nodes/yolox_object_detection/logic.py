@@ -4,6 +4,8 @@ from typing import List, Dict, Tuple
 import cv2
 import numpy as np
 
+from bbox_ex_msgs.msg import BoundingBoxes,BoundingBox
+
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
 from shigure_core.nodes.common_model.union_find_tree import UnionFindTree
@@ -17,7 +19,7 @@ class ObjectDetectionLogic:
     """物体検出ロジッククラス"""
 
     @staticmethod
-    def execute(subtraction_analyzed_img: np.ndarray, started_at: Timestamp, frame_object_list: List[FrameObject],
+    def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, frame_object_list: List[FrameObject],
                 judge_params: JudgeParams) -> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
