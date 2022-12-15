@@ -41,6 +41,7 @@ class ObjectDetectionLogic:
         # 検知が終了しているものは除外
         for frame_object in frame_object_list:
             if frame_object.is_finished():
+                frame_object.item.action = DetectedObjectActionEnum.TAKE_OUT
                 result[str(frame_object.item.detected_at)].append(frame_object)
             else:
                 prev_frame_object_dict[frame_object.item] = frame_object
@@ -93,7 +94,6 @@ class ObjectDetectionLogic:
         # リンクしなかったframe_objectは空のフレームを挟む
         for frame_object in frame_object_list:
             frame_object.add_empty_frame()
-            frame_object.item.action = DetectedObjectActionEnum.TAKE_OUT
             result[str(frame_object.item.detected_at)].append(frame_object)
 
         # リンクしなかったframe_object_itemは新たなframe_objectとして登録
