@@ -57,8 +57,8 @@ class ObjectDetectionLogic:
             height = ymax - y
             width = xmax - x
 
-            if i != 0 and:
-                mask_img: np.ndarray = subtraction_analyzed_img[y:y + height, x:x + width]
+            if i != 0:
+                mask_img: np.ndarray = subtraction_analyzed_img[y:ymax, x:xmax]
 
                 # モード選択
                 unique, freq = np.unique(mask_img, return_counts=True)
