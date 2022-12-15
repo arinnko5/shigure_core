@@ -60,15 +60,9 @@ class ObjectDetectionLogic:
 
             if i != 0 and class_id != person:
                 mask_img: np.ndarray = subtraction_analyzed_img[y:ymax, x:xmax]
+                    
 
-                # モード選択
-                unique, freq = np.unique(mask_img, return_counts=True)
-                not_zero_index = np.where(unique != 0)
-                unique = unique[not_zero_index]
-                freq = freq[not_zero_index]
-                mode = unique[np.argmax(freq)]
-
-                action = DetectedObjectActionEnum.BRING_IN if mode == 255 else DetectedObjectActionEnum.TAKE_OUT
+                action = DetectedObjectActionEnum.BRING_IN
 
                 bounding_box = BoundingBox(x, y, width, height)
                 item = FrameObjectItem(action, bounding_box, area, mask_img, started_at)
@@ -99,6 +93,7 @@ class ObjectDetectionLogic:
         # リンクしなかったframe_objectは空のフレームを挟む
         for frame_object in frame_object_list:
             frame_object.add_empty_frame()
+            frame_object.item.action = DetectedObjectActionEnum.TAKE_OUT
             result[str(frame_object.item.detected_at)].append(frame_object)
 
         # リンクしなかったframe_object_itemは新たなframe_objectとして登録
