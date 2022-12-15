@@ -56,8 +56,9 @@ class ObjectDetectionLogic:
             ymax = bbox.ymax
             height = ymax - y
             width = xmax - x
+            class_id = bbox.class_id
 
-            if i != 0:
+            if i != 0 and class_id != person:
                 mask_img: np.ndarray = subtraction_analyzed_img[y:ymax, x:xmax]
 
                 # モード選択
