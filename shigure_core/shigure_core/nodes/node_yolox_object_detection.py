@@ -61,6 +61,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
     self._color_img_frames = ColorImageFrames()
     self._buffer_size = 90
     
+    self._judge_params = JudgeParams(5)
+    
     self.object_index = 0
     
     def callback(self, yolox_bbox_src: Boundingboxes, color_img_src: CompressedImage, camera_info: CameraInfo):
@@ -84,7 +86,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
       frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
       self._color_img_frames.add(frame)
       frame_object_dict = self.object_detection_logic.execute(yolox_bbox_src, timestamp,
-                                                                self.frame_object_list)
+                                                                self.frame_object_list,self._judge_params)
       
       self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
       
