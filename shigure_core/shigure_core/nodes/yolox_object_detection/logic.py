@@ -31,8 +31,7 @@ class ObjectDetectionLogic:
         :return: 検出したObjectリスト, 更新された既知マスク
         """
         # ラベリング処理
-        yolox_bboxes = yolox_bbox.bounding_boxes
-
+        
         prev_frame_object_dict = {}
         frame_object_item_list = []
         union_find_tree: UnionFindTree[FrameObjectItem] = UnionFindTree[FrameObjectItem]()
@@ -46,15 +45,19 @@ class ObjectDetectionLogic:
             else:
                 prev_frame_object_dict[frame_object.item] = frame_object
         frame_object_list = list(prev_frame_object_dict.values())
+        
+        yolox_bboxes = yolox_bbox.bounding_boxes
 
-        for i, row in enumerate(stats):
-            area = row[cv2.CC_STAT_AREA]
-            x = row[cv2.CC_STAT_LEFT]
-            y = row[cv2.CC_STAT_TOP]
-            height = row[cv2.CC_STAT_HEIGHT]
-            width = row[cv2.CC_STAT_WIDTH]
 
-            if i != 0 and judge_params.min_size <= area <= judge_params.max_size:
+        for i, bbox in enumerate(yolox_bboxes):
+            x = bbox.xmin
+            y = bbox.ymin
+            xmax = bbox.xmax
+            ymax = bbox.ymax
+            height = ymax - y
+            width = xmax - x
+
+            if i != 0 and:
                 mask_img: np.ndarray = subtraction_analyzed_img[y:y + height, x:x + width]
 
                 # モード選択
