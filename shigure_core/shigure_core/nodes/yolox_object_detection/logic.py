@@ -31,8 +31,7 @@ class ObjectDetectionLogic:
         :return: 検出したObjectリスト, 更新された既知マスク
         """
         # ラベリング処理
-        binary_img = np.where(subtraction_analyzed_img != 0, 255, 0).astype(np.uint8)
-        ret, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_img, connectivity=8)
+        yolox_bboxes = yolox_bbox.bounding_boxes
 
         prev_frame_object_dict = {}
         frame_object_item_list = []
