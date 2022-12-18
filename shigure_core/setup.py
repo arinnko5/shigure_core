@@ -42,6 +42,7 @@ setup(
             'people_tracking = shigure_core.nodes.node_people_tracking:main',
             'record_event = shigure_core.nodes.node_record_event:main',
             'pose_save = shigure_core.nodes.node_pose_save:main',
+            'yolox_object_detection = shigure_core.nodes.node_yolox_object_detection:main',
         ],
     },
 )
