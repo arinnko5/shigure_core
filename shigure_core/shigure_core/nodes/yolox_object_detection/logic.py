@@ -42,6 +42,7 @@ class ObjectDetectionLogic:
         for frame_object in frame_object_list:
             if frame_object.is_finished():
                 frame_object.item.action = DetectedObjectActionEnum.TAKE_OUT
+                #frame_object.item.mask = 
                 result[str(frame_object.item.detected_at)].append(frame_object)
             else:
                 prev_frame_object_dict[frame_object.item] = frame_object
@@ -60,8 +61,9 @@ class ObjectDetectionLogic:
             class_id = bbox.class_id
 
             if i != 0 and class_id != person:
-                mask_img: np.ndarray = color_img[y:ymax, x:xmax]
-                    
+                brack_img = np.zeros_like(color_img)
+                brack_img[y:y + height, x:x + width] = 255
+                mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
 
                 action = DetectedObjectActionEnum.BRING_IN
 
@@ -84,7 +86,7 @@ class ObjectDetectionLogic:
         groups = union_find_tree.all_group_members().values()
         for items in groups:
             new_item: FrameObjectItem = items[0]
-            mask_img = ObjectDetectionLogic.update_mask_image(np.zeros(subtraction_analyzed_img.shape[:2]),
+            mask_img = ObjectDetectionLogic.update_mask_image(np.zeros(color_img.shape[:2]),
                                                               new_item)
             for item in items[1:]:
                 new_item, mask_img = ObjectDetectionLogic.update_item(new_item, item, mask_img)
