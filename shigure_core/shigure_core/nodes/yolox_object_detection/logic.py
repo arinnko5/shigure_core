@@ -24,7 +24,7 @@ class ObjectDetectionLogic:
         """
         物体検出ロジック
 
-        :param subtraction_analyzed_img:
+        :param yolox_bbox:
         :param started_at:
         :param frame_object_list:
         :param judge_params:
