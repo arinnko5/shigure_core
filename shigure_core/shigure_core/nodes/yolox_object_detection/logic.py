@@ -19,7 +19,7 @@ class ObjectDetectionLogic:
     """物体検出ロジッククラス"""
 
     @staticmethod
-    def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, frame_object_list: List[FrameObject],
+    def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, color_img:np.ndarray, frame_object_list: List[FrameObject],
                 judge_params: JudgeParams) -> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
@@ -60,7 +60,7 @@ class ObjectDetectionLogic:
             class_id = bbox.class_id
 
             if i != 0 and class_id != person:
-                mask_img: np.ndarray = subtraction_analyzed_img[y:ymax, x:xmax]
+                mask_img: np.ndarray = color_img[y:ymax, x:xmax]
                     
 
                 action = DetectedObjectActionEnum.BRING_IN
