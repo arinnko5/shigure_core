@@ -176,10 +176,10 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 def main(args=None):
   rclpy.init(args=args)
   
-  object_detection_node = ObjectDetectionNode()
+  yolox_object_detection_node = YoloxObjectDetectionNode()
   
   try:
-    rclpy.spin(object_detection_node)
+    rclpy.spin(yolox_object_detection_node)
     
   except KeyboardInterrupt:
     pass
@@ -187,7 +187,7 @@ def main(args=None):
   finally:
     print()
     # 終了処理
-    object_detection_node.destroy_node()
+    yolox_object_detection_node.destroy_node()
     rclpy.shutdown()
         
       
