@@ -67,34 +67,35 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
     self.object_index = 0
     
   def callback(self, yolox_bbox_src: Boundingboxes, color_img_src: CompressedImage, camera_info: CameraInfo):
-    self.get_logger().info('Buffering start', once=True)
-    self.frame_count_up()
-    color_img: np.ndarray = self.bridge.compressed_imgmsg_to_cv2(color_img_src)
-    height, width = color_img.shape[:2]
-    if not hasattr(self, 'object_list'):
-      self.object_list = []
-      black_img = np.zeros_like(color_img)
-      for i in range(4):
-        self.object_list.append(cv2.resize(black_img.copy(), (width // 2, height // 2)))
-    
-    if len(self._color_img_buffer) > 30:
-      self._color_img_buffer = self._color_img_buffer[1:]
-      self._color_img_frames.get(-30).new_image = color_img
-      self._color_img_buffer.append(color_img)
-      
-      timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
-      frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
-      self._color_img_frames.add(frame)
-      frame_object_dict = self.object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,
+  	self.get_logger().info('Buffering start', once=True)
+  	self.frame_count_up()
+  	color_img: np.ndarray = self.bridge.compressed_imgmsg_to_cv2(color_img_src)
+  	height, width = color_img.shape[:2]
+  	if not hasattr(self, 'object_list'):
+  		self.object_list = []
+  		black_img = np.zeros_like(color_img)
+  		for i in range(4):
+  			self.object_list.append(cv2.resize(black_img.copy(), (width // 2, height // 2)))
+  	
+  	if len(self._color_img_buffer) > 30:
+  		self._color_img_buffer = self._color_img_buffer[1:]
+  		self._color_img_frames.get(-30).new_image = color_img
+  	self._color_img_buffer.append(color_img)
+  	
+  	timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
+  	frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
+  	self._color_img_frames.add(frame)
+  	frame_object_dict = self.object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,
                                                                 self.frame_object_list,self._judge_params)
-      self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
+                                                               
+    self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
       
-      #result_img = cv2.cvtColor(subtraction_analysis_img, cv2.COLOR_GRAY2BGR)
-      
-      if self._color_img_frames.is_full():
-        self.get_logger().info('Buffering end', once=True)
-        
-        frame = self._color_img_frames.top_frame
+    #result_img = cv2.cvtColor(subtraction_analysis_img, cv2.COLOR_GRAY2BGR)
+    
+    if self._color_img_frames.is_full():
+    	self.get_logger().info('Buffering end', once=True)
+    	
+    	frame = self._color_img_frames.top_frame
         
         sec, nano_sec = frame.timestamp.timestamp
         detected_object_list = DetectedObjectList()
@@ -135,9 +136,9 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
         else:
           print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
         
-    def  create_msg(self, frame_object_list: List[FrameObject], detected_object_list: DetectedObjectList, frame: ColorImageFrame) -> DetectedObjectList:
-      for frame_object in frame_object_list:
-        action, bounding_box_src, size, mask_img, _ = frame_object.item.items
+  def  create_msg(self, frame_object_list: List[FrameObject], detected_object_list: DetectedObjectList, frame: ColorImageFrame) -> DetectedObjectList:
+  	for frame_object in frame_object_list:
+  		action, bounding_box_src, size, mask_img, _ = frame_object.item.items
         x, y, width, height = bounding_box_src.items
         
         detected_object = DetectedObject()
@@ -156,40 +157,39 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
         self.frame_object_list.remove(frame_object)
         
         if self.is_debug_mode:
-          item_color_img = frame.new_image if action == DetectedObjectActionEnum.BRING_IN else frame.old_image
-          print('オブジェクトが検出されました(',
-                f'action: {action.value}, x: {x}, y: {y}, width: {width}, height: {height}, size: {size})')
-          icon = np.zeros((height + 10, width, 3), dtype=np.uint8)
-          icon[0:height, 0:width, :] = item_color_img[y:y + height, x:x + width, :]
+        	item_color_img = frame.new_image if action == DetectedObjectActionEnum.BRING_IN else frame.old_image
+        	print('オブジェクトが検出されました(',
+        		f'action: {action.value}, x: {x}, y: {y}, width: {width}, height: {height}, size: {size})')
+        	icon = np.zeros((height + 10, width, 3), dtype=np.uint8)
+        	icon[0:height, 0:width, :] = item_color_img[y:y + height, x:x + width, :]
           
-          img_height, img_width = item_color_img.shape[:2]
-          icon = cv2.resize(icon.copy(), (img_width // 2, img_height // 2))
-          cv2.putText(icon, f'Action : {action.value}', (0, img_height // 2 - 5), cv2.FONT_HERSHEY_PLAIN, 1.5,
-                      (255, 255, 255), thickness=2)
+          	img_height, img_width = item_color_img.shape[:2]
+          	icon = cv2.resize(icon.copy(), (img_width // 2, img_height // 2))
+          	cv2.putText(icon, f'Action : {action.value}', (0, img_height // 2 - 5), cv2.FONT_HERSHEY_PLAIN, 1.5,
+                      	(255, 255, 255), thickness=2)
           
-          self.object_list[self.object_index] = icon
-          self.object_index = (self.object_index + 1) % 4
+          	self.object_list[self.object_index] = icon
+          	self.object_index = (self.object_index + 1) % 4
           
         return detected_object_list
       
 def main(args=None):
-  rclpy.init(args=args)
-  
-  yolox_object_detection_node = YoloxObjectDetectionNode()
-  
-  try:
-    rclpy.spin(yolox_object_detection_node)
-    
-  except KeyboardInterrupt:
-    pass
-  
-  finally:
-    print()
-    # 終了処理
-    yolox_object_detection_node.destroy_node()
-    rclpy.shutdown()
+	rclpy.init(args=args)
+	
+	yolox_object_detection_node = YoloxObjectDetectionNode()
+	
+	try:
+		rclpy.spin(yolox_object_detection_node)
+		
+	except KeyboardInterrupt:
+		pass
+		
+	finally:
+		print()
+		# 終了処理
+		yolox_object_detection_node.destroy_node()
+		rclpy.shutdown()
         
       
 if __name__ == '__main__':
-  main()
-   
+	main()
