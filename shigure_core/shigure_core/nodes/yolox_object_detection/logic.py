@@ -10,9 +10,9 @@ from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEn
 from shigure_core.nodes.common_model.timestamp import Timestamp
 from shigure_core.nodes.common_model.union_find_tree import UnionFindTree
 from shigure_core.nodes.common_model.bounding_box import BoundingBox
-from shigure_core.nodes.object_detection.frame_object import FrameObject
-from shigure_core.nodes.object_detection.frame_object_item import FrameObjectItem
-from shigure_core.nodes.object_detection.judge_params import JudgeParams
+from shigure_core.nodes.yolox_object_detection.frame_object import FrameObject
+from shigure_core.nodes.yolox_object_detection.frame_object_item import FrameObjectItem
+from shigure_core.nodes.yolox_object_detection.judge_params import JudgeParams
 
 
 class YoloxObjectDetectionLogic:
