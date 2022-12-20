@@ -15,7 +15,7 @@ from shigure_core.nodes.object_detection.frame_object_item import FrameObjectIte
 from shigure_core.nodes.object_detection.judge_params import JudgeParams
 
 
-class ObjectDetectionLogic:
+class YoloxObjectDetectionLogic:
     """物体検出ロジッククラス"""
 
     @staticmethod
