@@ -41,7 +41,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ContactedList.msg"
   "msg/HeaderString.msg"
   "msg/YoloxBoundingBox.msg"
-  "msg/BoundingBoxes.msg
+  "msg/BoundingBoxes.msg"
   DEPENDENCIES builtin_interfaces std_msgs sensor_msgs
 )
 
