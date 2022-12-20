@@ -67,20 +67,19 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
     self.object_index = 0
     
   def callback(self, yolox_bbox_src: Boundingboxes, color_img_src: CompressedImage, camera_info: CameraInfo):
-      self.get_logger().info('Buffering start', once=True)
-      self.frame_count_up()
-      
-      color_img: np.ndarray = self.bridge.compressed_imgmsg_to_cv2(color_img_src)
-      height, width = color_img.shape[:2]
-      if not hasattr(self, 'object_list'):
-        self.object_list = []
-        black_img = np.zeros_like(color_img)
-        for i in range(4):
-          self.object_list.append(cv2.resize(black_img.copy(), (width // 2, height // 2)))
-       
-      if len(self._color_img_buffer) > 30:
-        self._color_img_buffer = self._color_img_buffer[1:]
-        self._color_img_frames.get(-30).new_image = color_img
+    self.get_logger().info('Buffering start', once=True)
+    self.frame_count_up()
+    color_img: np.ndarray = self.bridge.compressed_imgmsg_to_cv2(color_img_src)
+    height, width = color_img.shape[:2]
+    if not hasattr(self, 'object_list'):
+      self.object_list = []
+      black_img = np.zeros_like(color_img)
+      for i in range(4):
+        self.object_list.append(cv2.resize(black_img.copy(), (width // 2, height // 2)))
+    
+    if len(self._color_img_buffer) > 30:
+      self._color_img_buffer = self._color_img_buffer[1:]
+      self._color_img_frames.get(-30).new_image = color_img
       self._color_img_buffer.append(color_img)
       
       timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
@@ -88,7 +87,6 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
       self._color_img_frames.add(frame)
       frame_object_dict = self.object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,
                                                                 self.frame_object_list,self._judge_params)
-      
       self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
       
       #result_img = cv2.cvtColor(subtraction_analysis_img, cv2.COLOR_GRAY2BGR)
