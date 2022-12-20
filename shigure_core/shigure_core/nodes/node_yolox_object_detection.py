@@ -5,8 +5,8 @@ import numpy as np
 import rclpy
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, CompressedImage
-from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox
-from bbox_ex_msgs.msg import BoundingBoxes
+from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox, BoundingBoxes
+#from bbox_ex_msgs.msg import BoundingBoxes
 
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
