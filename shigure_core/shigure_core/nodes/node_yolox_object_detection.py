@@ -5,7 +5,7 @@ import message_filters
 import numpy as np
 import rclpy
 from rclpy.qos import QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import Image, CompressedImage
+from sensor_msgs.msg import Image, CompressedImage, CameraInfo
 from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox, BoundingBoxes, YoloxBoundingBox
 #from bbox_ex_msgs.msg import BoundingBoxes
 
@@ -33,7 +33,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
     )
     yolox_bbox_subscriber = message_filters.Subscriber(
       self, 
-      Boundingboxes,
+      BoundingBoxes,
       '/bounding_boxes',
       qos_profile = shigure_qos
     )
