@@ -66,7 +66,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
     
     self.object_index = 0
     
-    def callback(self, yolox_bbox_src: Boundingboxes, color_img_src: CompressedImage, camera_info: CameraInfo):
+  def callback(self, yolox_bbox_src: Boundingboxes, color_img_src: CompressedImage, camera_info: CameraInfo):
       self.get_logger().info('Buffering start', once=True)
       self.frame_count_up()
       
