@@ -1,12 +1,12 @@
 float32 probability
-unit16 xmin
-unit16 ymin
-unit16 xmax
-unit16 ymax
-unit16 id
-unit16 img_width
-unit16 img_height
+float32 xmin
+float32 ymin
+float32 xmax
+float32 ymax
+float32 id
+float32 img_width
+float32 img_height
 int32 center_dist
 
 string class_id
-unit16 class_id_int
+int32 class_id_int
