@@ -61,7 +61,7 @@ class YoloxObjectDetectionLogic:
             width = xmax - x
             class_id = bbox.class_id
 
-            if i != 0 and class_id != person:
+            if i != 0 and class_id != 'person':
                 brack_img = np.zeros_like(color_img)
                 brack_img[y:y + height, x:x + width] = 255
                 mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
