@@ -8,7 +8,7 @@ import rclpy
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, CompressedImage, CameraInfo
-from shigure_core_msgs.msg import DetectedObjectList, DetectedObject#, BoundingBox, BoundingBoxes, YoloxBoundingBox
+from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox#, BoundingBoxes, YoloxBoundingBox
 from bboxes_ex_msgs.msg import BoundingBoxes
 
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
@@ -90,7 +90,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
 		frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
 		self._color_img_frames.add(frame)
-		frame_object_dict = self.object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params)
+		frame_object_dict = self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params)
 		
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
 		
