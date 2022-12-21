@@ -1,4 +1,5 @@
 import datetime
+from itertools import chain
 
 import cv2
 import message_filters
