@@ -27,6 +27,11 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		# QoS Settings
 		shigure_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
 		
+		# ros params
+		is_debug_mode_descriptor = ParameterDescriptor(type=ParameterType.PARAMETER_BOOL,description='If true, run debug mode.')
+		self.declare_parameter('is_debug_mode', False, is_debug_mode_descriptor)
+		self.is_debug_mode: bool = self.get_parameter("is_debug_mode").get_parameter_value().bool_value
+		
 		# publisher, subscriber
 		self.detection_publisher = self.create_publisher(
 			DetectedObjectList, 
