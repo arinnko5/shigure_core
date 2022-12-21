@@ -63,8 +63,8 @@ class YoloxObjectDetectionLogic:
 
             if i != 0 and class_id != 'person':
                 brack_img = np.zeros_like(color_img)
-                brack_img[int(y):int(y + height), int(x):int(x + width)] = 255
-                mask_img:np.ndarray = brack_img[int(y):int(y + height), int(x):int(x + width)]
+                brack_img[y:y + height, x:x + width] = 255
+                mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
 
                 action = DetectedObjectActionEnum.BRING_IN
 
