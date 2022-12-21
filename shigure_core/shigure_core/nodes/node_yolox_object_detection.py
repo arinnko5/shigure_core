@@ -8,8 +8,8 @@ import rclpy
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, CompressedImage, CameraInfo
-from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox, BoundingBoxes, YoloxBoundingBox
-#from bbox_ex_msgs.msg import BoundingBoxes
+from shigure_core_msgs.msg import DetectedObjectList, DetectedObject#, BoundingBox, BoundingBoxes, YoloxBoundingBox
+from bbox_ex_msgs.msg import BoundingBoxes
 
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
