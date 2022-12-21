@@ -89,7 +89,7 @@ class YoloxObjectDetectionLogic:
         groups = union_find_tree.all_group_members().values()
         for items in groups:
             new_item: FrameObjectItem = items[0]
-            mask_img = ObjectDetectionLogic.update_mask_image(np.zeros(color_img.shape[:2]),
+            mask_img = YoloxObjectDetectionLogic.update_mask_image(np.zeros(color_img.shape[:2]),
                                                               new_item)
             for item in items[1:]:
                 new_item, mask_img = ObjectDetectionLogic.update_item(new_item, item, mask_img)
