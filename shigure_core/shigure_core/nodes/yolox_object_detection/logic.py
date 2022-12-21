@@ -63,12 +63,14 @@ class YoloxObjectDetectionLogic:
 
             if i != 0 and class_id != 'person':
                 brack_img = np.zeros_like(color_img)
-                brack_img[y:y + height, x:x + width] = 255
-                mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
+                brack_img[int(y):int(y + height), int(x):int(x + width)] = 255
+                mask_img:np.ndarray = brack_img[int(y):int(y + height), int(x):int(x + width)]
 
                 action = DetectedObjectActionEnum.BRING_IN
 
                 bounding_box = BoundingBox(x, y, width, height)
+                area = width*height
+                
                 item = FrameObjectItem(action, bounding_box, area, mask_img, started_at)
                 frame_object_item_list.append(item)
 
