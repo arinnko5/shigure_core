@@ -5,6 +5,7 @@ import message_filters
 from typing import List
 import numpy as np
 import rclpy
+from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, CompressedImage, CameraInfo
 from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox, BoundingBoxes, YoloxBoundingBox
