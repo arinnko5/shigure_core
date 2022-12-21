@@ -4,7 +4,8 @@ from typing import List, Dict, Tuple
 import cv2
 import numpy as np
 
-from shigure_core_msgs.msg import BoundingBoxes,YoloxBoundingBox
+#from shigure_core_msgs.msg import BoundingBoxes,YoloxBoundingBox
+from bboxes_ex_msgs.msg import BoundingBoxes
 
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
