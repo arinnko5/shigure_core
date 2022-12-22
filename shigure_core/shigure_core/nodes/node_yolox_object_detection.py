@@ -1,5 +1,6 @@
 import datetime
 from itertools import chain
+import random
 
 import cv2
 import message_filters
@@ -71,6 +72,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self._judge_params = JudgeParams(5)
 		
 		self._colors = []
+		for i in range(255):
+			self._colors.append(tuple([random.randint(128, 192) for _ in range(3)]))
 		
 		self.object_index = 0
 		
