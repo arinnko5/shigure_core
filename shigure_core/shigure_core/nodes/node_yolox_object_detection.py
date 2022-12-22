@@ -130,7 +130,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 					height = ymax - y
 					width = xmax - x
 					class_id = bbox.class_id
-					if i != 0 and class_id != person:
+					if i != 0 and class_id != 'person':
 						color = self._colors[i % 255]
 						result_img = cv2.rectangle(color_img, (x, y), (xmax, ymax), color, thickness=3)
 						brack_img = np.zeros_like(color_img)
