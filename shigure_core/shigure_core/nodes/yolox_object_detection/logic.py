@@ -42,7 +42,7 @@ class YoloxObjectDetectionLogic:
         # 検知が終了しているものは除外
         for frame_object in frame_object_list:
             if frame_object.is_finished():
-                frame_object.item.action = DetectedObjectActionEnum.TAKE_OUT
+                #frame_object.item.action = DetectedObjectActionEnum.TAKE_OUT
                 #frame_object.item.mask = 
                 result[str(frame_object.item.detected_at)].append(frame_object)
             else:
