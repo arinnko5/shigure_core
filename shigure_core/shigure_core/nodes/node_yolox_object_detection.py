@@ -70,6 +70,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		
 		self._judge_params = JudgeParams(5)
 		
+		self._colors = []
+		
 		self.object_index = 0
 		
 	def callback(self, yolox_bbox_src: BoundingBoxes, color_img_src: CompressedImage, camera_info: CameraInfo):
