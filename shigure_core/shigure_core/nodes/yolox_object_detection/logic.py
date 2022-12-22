@@ -92,7 +92,7 @@ class YoloxObjectDetectionLogic:
             mask_img = YoloxObjectDetectionLogic.update_mask_image(np.zeros(color_img.shape[:2]),
                                                               new_item)
             for item in items[1:]:
-                new_item, mask_img = ObjectDetectionLogic.update_item(new_item, item, mask_img)
+                new_item, mask_img = YoloxObjectDetectionLogic.update_item(new_item, item, mask_img)
 
             result[str(new_item.detected_at)].append(FrameObject(new_item, judge_params.allow_empty_frame_count))
 
