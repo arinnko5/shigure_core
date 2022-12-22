@@ -121,6 +121,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			self.detection_publisher.publish(detected_object_list)
 			
 			if self.is_debug_mode:
+				yolox_bboxes = yolox_bbox_subscriber.bounding_boxes
 				for i, bbox in enumerate(yolox_bboxes):
 					x = bbox.xmin
 					y = bbox.ymin
