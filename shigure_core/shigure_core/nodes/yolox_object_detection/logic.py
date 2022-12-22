@@ -62,7 +62,7 @@ class YoloxObjectDetectionLogic:
             class_id = bbox.class_id
 
             if i != 0 and class_id != 'person':
-                brack_img = np.zeros_like(color_img)
+                brack_img = np.zeros(color_img..shape[:2])
                 brack_img[y:y + height, x:x + width] = 255
                 mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
 
@@ -117,7 +117,7 @@ class YoloxObjectDetectionLogic:
                     right.bounding_box.x + right.bounding_box.width) - x
         height = max(left.bounding_box.y + left.bounding_box.height,
                      right.bounding_box.y + right.bounding_box.height) - y
-        mask_img = ObjectDetectionLogic.update_mask_image(mask_img, right)
+        mask_img = YoloxObjectDetectionLogic.update_mask_image(mask_img, right)
         size = np.count_nonzero(mask_img[y:y + height, x:x + width])
 
         new_bounding_box = BoundingBox(x, y, width, height)
