@@ -15,7 +15,7 @@ class FrameObject:
         self._empty_count += 1
 
     def is_finished(self) -> bool:
-        self._item.action = DetectedObjectActionEnum.TAKE_OUT
+        #self._item.action = DetectedObjectActionEnum.TAKE_OUT
         return self._allow_empty_frame_count < self._empty_count
 
     @property
