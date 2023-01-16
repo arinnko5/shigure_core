@@ -14,6 +14,7 @@ from shigure_core.nodes.common_model.bounding_box import BoundingBox
 from shigure_core.nodes.yolox_object_detection.frame_object import FrameObject
 from shigure_core.nodes.yolox_object_detection.frame_object_item import FrameObjectItem
 from shigure_core.nodes.yolox_object_detection.judge_params import JudgeParams
+from shigure_core.nodes.yolox_object_detection.Bbox_Object import BboxObject
 
 
 class YoloxObjectDetectionLogic:
