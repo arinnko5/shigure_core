@@ -24,7 +24,6 @@ class YoloxObjectDetectionLogic:
                 judge_params: JudgeParams, bboxes_wait_list: List[BboxObject]) -> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
-
         :param yolox_bbox:
         :param started_at:
         :param frame_object_list:
@@ -120,15 +119,11 @@ class YoloxObjectDetectionLogic:
         								union_find_tree.add(item)
         								frame_object_item_list.remove(item)
         							union_find_tree.unite(prev_item, item)
-        					
-        			
-        	
+                                    
         	for compare_item in bbox_compare_list:
         		if compare_item.not_mach(bboxes_wait_list):
         			bboxes_wait_list.append(compare_item)
-        			
-        
-
+        		
         # リンクした範囲を1つにまとめる
         groups = union_find_tree.all_group_members().values()
         for items in groups:
