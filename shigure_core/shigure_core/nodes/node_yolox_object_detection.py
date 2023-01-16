@@ -22,7 +22,7 @@ from shigure_core.nodes.yolox_object_detection.color_image_frames import ColorIm
 from shigure_core.nodes.yolox_object_detection.frame_object import FrameObject
 from shigure_core.nodes.yolox_object_detection.judge_params import JudgeParams
 from shigure_core.nodes.yolox_object_detection.logic import YoloxObjectDetectionLogic
-from shigure_core.nodes.yolox_object_detection.BboxObject import BboxObject
+from shigure_core.nodes.yolox_object_detection.Bbox_Object import BboxObject
 
 class YoloxObjectDetectionNode(ImagePreviewNode):
 	object_list: list
