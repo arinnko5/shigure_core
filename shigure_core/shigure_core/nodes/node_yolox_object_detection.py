@@ -10,8 +10,9 @@ import rclpy
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, CompressedImage, CameraInfo
-from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox#, BoundingBoxes, YoloxBoundingBox
+from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox
 from bboxes_ex_msgs.msg import BoundingBoxes
+
 
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
@@ -21,6 +22,7 @@ from shigure_core.nodes.yolox_object_detection.color_image_frames import ColorIm
 from shigure_core.nodes.yolox_object_detection.frame_object import FrameObject
 from shigure_core.nodes.yolox_object_detection.judge_params import JudgeParams
 from shigure_core.nodes.yolox_object_detection.logic import YoloxObjectDetectionLogic
+from shigure_core.nodes.yolox_object_detection.BboxObject import BboxObject
 
 class YoloxObjectDetectionNode(ImagePreviewNode):
 	object_list: list
@@ -65,6 +67,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self.yolox_object_detection_logic = YoloxObjectDetectionLogic()
 		
 		self.frame_object_list: List[FrameObject] = []
+		self.bboxes_wait_list:List[BboxObject] = []
 		self._color_img_buffer: List[np.ndarray] = []
 		self._color_img_frames = ColorImageFrames()
 		self._buffer_size = 90
@@ -96,8 +99,9 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
 		frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
 		self._color_img_frames.add(frame)
-		frame_object_dict = self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params)
+		frame_object_dict,bboxes_wait_list = self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.bboxes_wait_list)
 		
+		self.bboxes_wait_list = bboxes_wait_list
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
 		
 		#result_img = cv2.cvtColor(subtraction_analysis_img, cv2.COLOR_GRAY2BGR)
