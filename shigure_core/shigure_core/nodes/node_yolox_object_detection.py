@@ -129,27 +129,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			self.detection_publisher.publish(detected_object_list)
 			
-			if self.is_debug_mode:
-				yolox_bboxes = yolox_bbox_src.bounding_boxes
-				for i, bbox in enumerate(yolox_bboxes):
-					x = bbox.xmin
-					y = bbox.ymin
-					xmax = bbox.xmax
-					ymax = bbox.ymax
-					height = ymax - y
-					width = xmax - x
-					class_id = bbox.class_id
-					if i != 0 and class_id != 'person':
-						color = self._colors[i % 255]
-						result_img = cv2.rectangle(color_img, (x, y), (xmax, ymax), color, thickness=3)
-						brack_img = np.zeros_like(color_img)
-						img = self.print_fps(brack_img)
-						tile_img = cv2.hconcat([result_img, img])
-						cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
-						cv2.imshow("yolox_object_detection", tile_img)
-						cv2.waitKey(1)
-			else:
-				print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
+			
+			
 				
 	def  create_msg(self, frame_object_list: List[FrameObject], detected_object_list: DetectedObjectList, frame: ColorImageFrame) -> DetectedObjectList:
 		for frame_object in frame_object_list:
@@ -185,6 +166,17 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 				
 				self.object_list[self.object_index] = icon
 				self.object_index = (self.object_index + 1) % 4
+				
+				color = self._colors[i % 255]
+				result_img = cv2.rectangle(color_img, (x, y), (x + width, y + hight), color, thickness=3)
+				brack_img = np.zeros_like(color_img)
+						img = self.print_fps(brack_img)
+						tile_img = cv2.hconcat([result_img, img])
+						cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
+						cv2.imshow("yolox_object_detection", tile_img)
+						cv2.waitKey(1)
+			else:
+				print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
 				
 			return detected_object_list
       
