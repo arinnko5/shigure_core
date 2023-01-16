@@ -21,7 +21,7 @@ class YoloxObjectDetectionLogic:
 
     @staticmethod
     def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, color_img:np.ndarray, frame_object_list: List[FrameObject],
-                judge_params: JudgeParams) -> Dict[str, List[FrameObject]]:
+                judge_params: JudgeParams, bboxes_wait_list: List[BboxObject]) -> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
 
@@ -34,23 +34,21 @@ class YoloxObjectDetectionLogic:
         # ラベリング処理
         
         prev_frame_object_dict = {}
-        frame_object_item_list = []
+        bbox_compare_list = []
         union_find_tree: UnionFindTree[FrameObjectItem] = UnionFindTree[FrameObjectItem]()
-
+        
         result = defaultdict(list)
-
+        
         # 検知が終了しているものは除外
         for frame_object in frame_object_list:
-            if frame_object.is_finished()
-                #frame_object._item._action = DetectedObjectActionEnum.TAKE_OUT
+            if frame_object.is_finished():
                 result[str(frame_object.item.detected_at)].append(frame_object)
             else:
                 prev_frame_object_dict[frame_object.item] = frame_object
         frame_object_list = list(prev_frame_object_dict.values())
-        
+
         yolox_bboxes = yolox_bbox.bounding_boxes
-
-
+        
         for i, bbox in enumerate(yolox_bboxes):
             x = bbox.xmin
             y = bbox.ymin
@@ -70,19 +68,66 @@ class YoloxObjectDetectionLogic:
                 bounding_box = BoundingBox(x, y, width, height)
                 area = width*height
                 
-                item = FrameObjectItem(action, bounding_box, area, mask_img, started_at)
-                frame_object_item_list.append(item)
-
-                for prev_item, frame_object in prev_frame_object_dict.items():
-                    is_matched, size = prev_item.is_match(item)
-                    if is_matched:
-                        if not union_find_tree.has_item(prev_item):
-                            union_find_tree.add(prev_item)
-                            frame_object_list.remove(frame_object)
-                        if not union_find_tree.has_item(item):
-                            union_find_tree.add(item)
-                            frame_object_item_list.remove(item)
-                        union_find_tree.unite(prev_item, item)
+                #待機リストが空なら待機リストにオブジェクト追加、空でない場合比較リストに追加
+                if not bboxes_wait_list:
+                	bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id,found_count, not_found_count)
+                	bboxes_wait_list.append(bbox_item)
+                else:
+                	bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id,found_count, not_found_count)
+                	bbox_compare_list.append(bbox_item)
+                	
+                	
+        #比較リストが空でなければ
+        #待機リストのobjectが比較リストを見に行って
+        #同じものがあればfoundカウント増やし10以上になればBRING_IN
+        #同じものが無ければnot_foundカウントを増やして10以上になればTAKE_OUT
+        if bbox_compare_list:
+        	for wait_item in bboxes_wait_list:
+        		for compare_item in bbox_compare_list:
+        			if wait_item.is_match(compare_item):#マッチしたら
+        				wait_item.add_found_count()
+        				if wait_item.found_count_is():
+        					action = DetectedObjectActionEnum.BRING_IN
+        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item_size, wait_item._mask_img, wait_item._started_at)
+        					frame_object_item_list.append(item)
+        					
+        					for prev_item, frame_object in prev_frame_object_dict.items():
+        						is_matched, size = prev_item.is_match(item)
+        						if is_matched:
+        							if not union_find_tree.has_item(prev_item):
+        								union_find_tree.add(prev_item)
+        								frame_object_list.remove(frame_object)
+        							if not union_find_tree.has_item(item):
+        								union_find_tree.add(item)
+        								frame_object_item_list.remove(item)
+        							union_find_tree.unite(prev_item, item)
+        		    
+        			if wait_item.not_mach(bbox_compare_list):#一つもマッチしなかったら
+        				wait_item.add_not_found_count()
+        				if wait_item.not_found_count_is():
+        					action = DetectedObjectActionEnum.TAKE_OUT
+        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item_size, wait_item._mask_img, wait_item._started_at)
+        					frame_object_item_list.append(item)
+        					bboxes_wait_list.remove(wait_item)
+        					
+        					for prev_item, frame_object in prev_frame_object_dict.items():
+        						is_matched, size = prev_item.is_match(item)
+        						if is_matched:
+        							if not union_find_tree.has_item(prev_item):
+        								union_find_tree.add(prev_item)
+        								frame_object_list.remove(frame_object)
+        							if not union_find_tree.has_item(item):
+        								union_find_tree.add(item)
+        								frame_object_item_list.remove(item)
+        							union_find_tree.unite(prev_item, item)
+        					
+        			
+        	
+        	for compare_item in bbox_compare_list:
+        		if compare_item.not_mach(bboxes_wait_list):
+        			bboxes_wait_list.append(compare_item)
+        			
+        
 
         # リンクした範囲を1つにまとめる
         groups = union_find_tree.all_group_members().values()
@@ -105,7 +150,7 @@ class YoloxObjectDetectionLogic:
             frame_object = FrameObject(frame_object_item, judge_params.allow_empty_frame_count)
             result[str(frame_object_item.detected_at)].append(frame_object)
 
-        return result
+        return result,bboxes_wait_list
 
     @staticmethod
     def update_item(left: FrameObjectItem, right: FrameObjectItem,
