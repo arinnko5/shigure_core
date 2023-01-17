@@ -36,7 +36,7 @@ class YoloxObjectDetectionLogic:
         prev_frame_object_dict = {}
         bbox_compare_list = []
         union_find_tree: UnionFindTree[FrameObjectItem] = UnionFindTree[FrameObjectItem]()
-        
+        frame_object_item_list = []
         result = defaultdict(list)
         
         # 検知が終了しているものは除外
@@ -88,7 +88,7 @@ class YoloxObjectDetectionLogic:
         				wait_item.add_found_count()
         				if wait_item.found_count_is():
         					action = DetectedObjectActionEnum.BRING_IN
-        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item_size, wait_item._mask_img, wait_item._started_at)
+        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at)
         					frame_object_item_list.append(item)
         					
         					for prev_item, frame_object in prev_frame_object_dict.items():
@@ -106,7 +106,7 @@ class YoloxObjectDetectionLogic:
         				wait_item.add_not_found_count()
         				if wait_item.not_found_count_is():
         					action = DetectedObjectActionEnum.TAKE_OUT
-        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item_size, wait_item._mask_img, wait_item._started_at)
+        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at)
         					frame_object_item_list.append(item)
         					bboxes_wait_list.remove(wait_item)
         					
