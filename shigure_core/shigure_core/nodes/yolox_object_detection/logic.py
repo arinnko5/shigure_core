@@ -102,7 +102,6 @@ class YoloxObjectDetectionLogic:
         							union_find_tree.unite(prev_item, item)
         		    
         			if wait_item.not_mach(bbox_compare_list):#一つもマッチしなかったら
-        				wait_item.add_not_found_count()
         				if wait_item.not_found_count_is():
         					action = DetectedObjectActionEnum.TAKE_OUT
         					item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at)
