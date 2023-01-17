@@ -163,8 +163,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 				self.object_index = (self.object_index + 1) % 4
 				
 				color = random.choice(self._colors)
-				result_img = cv2.rectangle(color_img, (x, y), (x + width, y + hight), color, thickness=3)
-				brack_img = np.zeros_like(color_img)
+				result_img = cv2.rectangle(frame.new_image, (x, y), (x + width, y + hight), color, thickness=3)
+				brack_img = np.zeros_like(frame.new_image)
 				img = self.print_fps(brack_img)
 				tile_img = cv2.hconcat([result_img, img])
 				cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
