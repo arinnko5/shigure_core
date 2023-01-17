@@ -10,8 +10,9 @@ import rclpy
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, CompressedImage, CameraInfo
-from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox#, BoundingBoxes, YoloxBoundingBox
+from shigure_core_msgs.msg import DetectedObjectList, DetectedObject, BoundingBox
 from bboxes_ex_msgs.msg import BoundingBoxes
+
 
 from shigure_core.enum.detected_object_action_enum import DetectedObjectActionEnum
 from shigure_core.nodes.common_model.timestamp import Timestamp
@@ -21,6 +22,7 @@ from shigure_core.nodes.yolox_object_detection.color_image_frames import ColorIm
 from shigure_core.nodes.yolox_object_detection.frame_object import FrameObject
 from shigure_core.nodes.yolox_object_detection.judge_params import JudgeParams
 from shigure_core.nodes.yolox_object_detection.logic import YoloxObjectDetectionLogic
+from shigure_core.nodes.yolox_object_detection.Bbox_Object import BboxObject
 
 class YoloxObjectDetectionNode(ImagePreviewNode):
 	object_list: list
@@ -65,6 +67,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self.yolox_object_detection_logic = YoloxObjectDetectionLogic()
 		
 		self.frame_object_list: List[FrameObject] = []
+		self.bboxes_wait_list:List[BboxObject] = []
 		self._color_img_buffer: List[np.ndarray] = []
 		self._color_img_frames = ColorImageFrames()
 		self._buffer_size = 90
@@ -96,8 +99,9 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
 		frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
 		self._color_img_frames.add(frame)
-		frame_object_dict = self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params)
+		frame_object_dict,bboxes_wait_list = self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.bboxes_wait_list)
 		
+		self.bboxes_wait_list = bboxes_wait_list
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
 		
 		#result_img = cv2.cvtColor(subtraction_analysis_img, cv2.COLOR_GRAY2BGR)
@@ -125,27 +129,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			self.detection_publisher.publish(detected_object_list)
 			
-			if self.is_debug_mode:
-				yolox_bboxes = yolox_bbox_src.bounding_boxes
-				for i, bbox in enumerate(yolox_bboxes):
-					x = bbox.xmin
-					y = bbox.ymin
-					xmax = bbox.xmax
-					ymax = bbox.ymax
-					height = ymax - y
-					width = xmax - x
-					class_id = bbox.class_id
-					if i != 0 and class_id != 'person':
-						color = self._colors[i % 255]
-						result_img = cv2.rectangle(color_img, (x, y), (xmax, ymax), color, thickness=3)
-						brack_img = np.zeros_like(color_img)
-						img = self.print_fps(brack_img)
-						tile_img = cv2.hconcat([result_img, img])
-						cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
-						cv2.imshow("yolox_object_detection", tile_img)
-						cv2.waitKey(1)
-			else:
-				print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
+			
+			
 				
 	def  create_msg(self, frame_object_list: List[FrameObject], detected_object_list: DetectedObjectList, frame: ColorImageFrame) -> DetectedObjectList:
 		for frame_object in frame_object_list:
@@ -181,6 +166,17 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 				
 				self.object_list[self.object_index] = icon
 				self.object_index = (self.object_index + 1) % 4
+				
+				color = self._colors[i % 255]
+				result_img = cv2.rectangle(color_img, (x, y), (x + width, y + hight), color, thickness=3)
+				brack_img = np.zeros_like(color_img)
+						img = self.print_fps(brack_img)
+						tile_img = cv2.hconcat([result_img, img])
+						cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
+						cv2.imshow("yolox_object_detection", tile_img)
+						cv2.waitKey(1)
+			else:
+				print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
 				
 			return detected_object_list
       
