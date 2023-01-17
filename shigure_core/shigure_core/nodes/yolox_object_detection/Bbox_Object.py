@@ -25,7 +25,7 @@ class BboxObject:
     	bbox_y = abs(self._bounding_box._y - other._bounding_box._y)
     	bbox_width = abs(self._bounding_box._width - other._bounding_box._width)
     	bbox_height = abs(self._bounding_box._height - other._bounding_box._height)
-        if self._class_id==other._class_id & bbox_x < 30 & bbox_y < 30 & bbox_width < 30 & bbox_height < 30:
+        if (self._class_id==other._class_id) & bbox_x < 30 & bbox_y < 30 & bbox_width < 30 & bbox_height < 30:
         	return True
         else if:
         	match_count += 1
