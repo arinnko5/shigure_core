@@ -18,7 +18,7 @@ class BboxObject:
         self._found_count = 0
         self._not_found_count = 0
         
-        match_count = 0
+        self.match_count = 0
 
     def is_match(self, other) -> Tuple[bool, int]:
     	bbox_x = abs(self._bounding_box._x - other._bounding_box._x)
@@ -28,7 +28,7 @@ class BboxObject:
         if (self._class_id==other._class_id) & bbox_x < 30 & bbox_y < 30 & bbox_width < 30 & bbox_height < 30:
         	return True
         else if:
-        	match_count += 1
+        	self.match_count += 1
             
     def not_mach(self, List):
     	if match_count >= len(List):
