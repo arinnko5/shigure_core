@@ -58,18 +58,18 @@ class YoloxObjectDetectionLogic:
             width = xmax - x
             class_id = bbox.class_id
 
-            if i != 0 and class_id != 'person':
+            if class_id != 'person':
                 brack_img = np.zeros(color_img..shape[:2])
                 brack_img[y:y + height, x:x + width] = 255
                 mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
 
-                action = DetectedObjectActionEnum.BRING_IN
+                #action = DetectedObjectActionEnum.BRING_IN
 
                 bounding_box = BoundingBox(x, y, width, height)
                 area = width*height
                 
                 #待機リストが空なら待機リストにオブジェクト追加、空でない場合比較リストに追加
-                if not bboxes_wait_list:
+                if (not bboxes_wait_list)or (len(bboxes_wait_list) < len(yolox_bboxes)):
                 	bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id,found_count, not_found_count)
                 	bboxes_wait_list.append(bbox_item)
                 else:
@@ -84,8 +84,7 @@ class YoloxObjectDetectionLogic:
         if bbox_compare_list:
         	for wait_item in bboxes_wait_list:
         		for compare_item in bbox_compare_list:
-        			if wait_item.is_match(compare_item):#マッチしたら
-        				wait_item.add_found_count()
+        			if wait_item.is_match(compare_item):
         				if wait_item.found_count_is():
         					action = DetectedObjectActionEnum.BRING_IN
         					item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at)
