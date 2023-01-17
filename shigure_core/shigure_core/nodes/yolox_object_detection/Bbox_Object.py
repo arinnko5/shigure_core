@@ -27,7 +27,7 @@ class BboxObject:
     	bbox_height = abs(self._bounding_box._height - other._bounding_box._height)
         if self._class_id==other._class_id & bbox_x < 30 & bbox_y < 30 & bbox_width < 30 & bbox_height < 30:
         	return True
-        else if:
+        else:
         	match_count += 1
             
     def not_mach(self, List):
