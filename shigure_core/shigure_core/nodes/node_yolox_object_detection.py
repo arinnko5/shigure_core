@@ -162,7 +162,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 				self.object_list[self.object_index] = icon
 				self.object_index = (self.object_index + 1) % 4
 				
-				color = self._colors[i % 255]
+				color = random.choice(self._colors)
 				result_img = cv2.rectangle(color_img, (x, y), (x + width, y + hight), color, thickness=3)
 				brack_img = np.zeros_like(color_img)
 				img = self.print_fps(brack_img)
