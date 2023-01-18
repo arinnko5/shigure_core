@@ -36,8 +36,7 @@ class YoloxObjectDetectionLogic:
         prev_frame_object_dict = {}
         bbox_compare_list:List[BboxObject] = []
         union_find_tree: UnionFindTree[FrameObjectItem] = UnionFindTree[FrameObjectItem]()
-        frame_object_item_list = []
-        bbox
+        frame_object_item_list = [
         result = defaultdict(list)
         
         # 検知が終了しているものは除外
