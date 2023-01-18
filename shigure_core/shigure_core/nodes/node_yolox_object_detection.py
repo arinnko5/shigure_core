@@ -102,9 +102,11 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self._color_img_frames.add(frame)
 		frame_object_dict,bboxes_start_list,bring_in_list,bbox_wait_list,count= self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.bboxes_start_list,self.bring_in_list,self.bbox_wait_list,self._count)
 		
-		self.bboxes_start_list = bboxes_start_list
+		if self._count == 0:
+			self.bboxes_start_list = bboxes_start_list
 		self.bring_in_list = bring_in_list
 		self.bbox_wait_list = bbox_wait_list
+		count = 1
 		self._count = count
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
 		
