@@ -63,14 +63,15 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self.yolox_object_detection_logic = YoloxObjectDetectionLogic()
 		
 		self.frame_object_list: List[FrameObject] = []
+		self.bboxes_start_list:List[BboxObject]= []
 		self.bring_in_list:List[BboxObject] = []
 		self.bboxes_wait_list:List[BboxObject] = []
 		self._color_img_buffer: List[np.ndarray] = []
 		self._color_img_frames = ColorImageFrames()
 		self._buffer_size = 90
-		self._count = 0
 		
-		self._judge_params = JudgeParams(70)
+		self._judge_params = JudgeParams(100)
+		self._count = 0
 		
 		self._colors = []
 		for i in range(255):
@@ -99,10 +100,11 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
 		frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
 		self._color_img_frames.add(frame)
-		frame_object_dict,bboxes_wait_list,bring_in_list,count= self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.bboxes_wait_list,self.bring_in_list,self._count)
+		frame_object_dict,bboxes_start_list,bring_in_list,bbox_wait_list,count= self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.bboxes_start_list,self.bring_in_list,self.bbox_wait_list,self._count)
 		
-		self.bboxes_wait_list = bboxes_wait_list
+		self.bboxes_start_list = bboxes_start_list
 		self.bring_in_list = bring_in_list
+		self.bbox_wait_list = bbox_wait_list
 		self._count = count
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
 		
@@ -137,12 +139,12 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 					x, y, width, height = bounding_box_src.items
 					color = random.choice(self._colors)
 					result_img = cv2.rectangle(color_img, (x, y), (x + width, y + height), color, thickness=3)
-				brack_img = np.zeros_like(color_img)
-				img = self.print_fps(brack_img)
-				tile_img = cv2.hconcat([result_img, img])
-				cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
-				cv2.imshow("yolox_object_detection", tile_img)
-				cv2.waitKey(1)
+					brack_img = np.zeros_like(color_img)
+					img = self.print_fps(brack_img)
+					tile_img = cv2.hconcat([result_img, img])
+					cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
+					cv2.imshow("yolox_object_detection", tile_img)
+					cv2.waitKey(1)
 			#else:
 				#print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
 				
