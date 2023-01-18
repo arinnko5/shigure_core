@@ -134,7 +134,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			self.detection_publisher.publish(detected_object_list)
 			if self.is_debug_mode:
-				for bbox in bboxes_wait_list:
+				for bbox in bboxes_start_list:
 					bounding_box_src = bbox._bounding_box
 					x, y, width, height = bounding_box_src.items
 					color = random.choice(self._colors)
