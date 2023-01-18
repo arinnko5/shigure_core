@@ -65,7 +65,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self.frame_object_list: List[FrameObject] = []
 		self.bboxes_start_list:List[BboxObject]= []
 		self.bring_in_list:List[BboxObject] = []
-		self.bboxes_wait_list:List[BboxObject] = []
+		self.bbox_wait_list:List[BboxObject] = []
 		self._color_img_buffer: List[np.ndarray] = []
 		self._color_img_frames = ColorImageFrames()
 		self._buffer_size = 90
