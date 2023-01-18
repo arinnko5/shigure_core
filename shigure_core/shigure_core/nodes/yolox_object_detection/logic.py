@@ -36,7 +36,7 @@ class YoloxObjectDetectionLogic:
         prev_frame_object_dict = {}
         bbox_compare_list:List[BboxObject] = []
         union_find_tree: UnionFindTree[FrameObjectItem] = UnionFindTree[FrameObjectItem]()
-        frame_object_item_list = [
+        frame_object_item_list = []
         result = defaultdict(list)
         
         # 検知が終了しているものは除外
@@ -76,16 +76,20 @@ class YoloxObjectDetectionLogic:
         		bbox_compare_list.append(bbox_item)
         		#print(len(bbox_compare_list))
         		
-        		#最初に流れてくる物体をリストへ
+        		#最初に流れてくる物体をbboxes_start_listリストへ
         		if count == 0:
         			bboxes_start_list.append(bbox_item)
+        			print(count)
+        			print(len(bboxes_start_list))
                     
         		#print('waitmax')
         		
         		#待機リストの要素とbbox_itemが同じかどうか+マッチしないなら新規持ち込みリストへ
         		for i,start_item in enumerate(bboxes_start_list):
-        			if not start_item.is_match(bbox_item):
+        			if start_item.is_match(bbox_item) == False:
         				bbox_wait_list.append(bbox_item)
+        				print('wait_list')
+        				print(len(bbox_wait_list))
         				
         		if count != 0:
         			for i, wait_item in enumerate(bbox_wait_list):
@@ -95,6 +99,7 @@ class YoloxObjectDetectionLogic:
         						item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at,wait_item._class_id)
         						frame_object_item_list.append(item)
         						bring_in_list.append(wait_item)
+        						del bbox_wait_list[i]
         						for prev_item, frame_object in prev_frame_object_dict.items():
         							is_matched, size = prev_item.is_match(item)
         							if is_matched:
@@ -146,7 +151,7 @@ class YoloxObjectDetectionLogic:
         for frame_object_item in frame_object_item_list:
         	frame_object = FrameObject(frame_object_item, judge_params.allow_empty_frame_count)
         	result[str(frame_object_item.detected_at)].append(frame_object)
-        count = 1
+        	
         return result,bboxes_start_list,bring_in_list,bbox_wait_list,count
     
     @staticmethod
