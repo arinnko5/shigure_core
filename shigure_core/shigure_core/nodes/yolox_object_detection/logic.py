@@ -88,15 +88,33 @@ class YoloxObjectDetectionLogic:
         		if not start_item.is_match(compare_item):
         			bbox_wait_list.append(compare_item)
         				
-        if count != 0:
-        	for i,compare_item in enumerate(bbox_compare_list):
-        		for i, wait_item in enumerate(bbox_wait_list):
-        				if wait_item.is_match(compare_item):
-        					if wait_item.found_count_is():
-        						action = DetectedObjectActionEnum.BRING_IN
-        						item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at,wait_item._class_id)
+        	if count != 0:
+        			for i, wait_item in enumerate(bbox_wait_list):
+        					if wait_item.is_match(compare_item):
+        						if wait_item.found_count_is():
+        							action = DetectedObjectActionEnum.BRING_IN
+        							item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at,wait_item._class_id)
+        							frame_object_item_list.append(item)
+        							bring_in_list.append(wait_item)
+        							for prev_item, frame_object in prev_frame_object_dict.items():
+        								is_matched, size = prev_item.is_match(item)
+        								if is_matched:
+        									if not union_find_tree.has_item(prev_item):
+        										union_find_tree.add(prev_item)
+        										frame_object_list.remove(frame_object)
+        									if not union_find_tree.has_item(item):
+        										union_find_tree.add(item)
+        										frame_object_item_list.remove(item)
+        									union_find_tree.unite(prev_item, item)
+        								
+        			#持ち込みリスト要素とbbox_itemを比べてtake_out判定
+        			for i,bringin_item in enumerate(bring_in_list):
+        				if not bringin_item.is_match(bbox_item):
+        					if bringin_item.not_found_count_is():
+        						action = DetectedObjectActionEnum.TAKE_OUT
+        						item = FrameObjectItem(action, bringin_item._bounding_box, bringin_item._size, bringin_item._mask, bringin_item._started_at,wait_item._class_id)
         						frame_object_item_list.append(item)
-        						bring_in_list.append(wait_item)
+        						del bring_in_list[i]
         						for prev_item, frame_object in prev_frame_object_dict.items():
         							is_matched, size = prev_item.is_match(item)
         							if is_matched:
@@ -107,25 +125,6 @@ class YoloxObjectDetectionLogic:
         									union_find_tree.add(item)
         									frame_object_item_list.remove(item)
         								union_find_tree.unite(prev_item, item)
-        								
-        			#持ち込みリスト要素とbbox_itemを比べてtake_out判定
-        		for i,bringin_item in enumerate(bring_in_list):
-        			if not bringin_item.is_match(bbox_item):
-        				if bringin_item.not_found_count_is():
-        					action = DetectedObjectActionEnum.TAKE_OUT
-        					item = FrameObjectItem(action, bringin_item._bounding_box, bringin_item._size, bringin_item._mask, bringin_item._started_at,wait_item._class_id)
-        					frame_object_item_list.append(item)
-        					del bring_in_list[i]
-        					for prev_item, frame_object in prev_frame_object_dict.items():
-        						is_matched, size = prev_item.is_match(item)
-        						if is_matched:
-        							if not union_find_tree.has_item(prev_item):
-        								union_find_tree.add(prev_item)
-        								frame_object_list.remove(frame_object)
-        							if not union_find_tree.has_item(item):
-        								union_find_tree.add(item)
-        								frame_object_item_list.remove(item)
-        							union_find_tree.unite(prev_item, item)
         			
         		
         		
