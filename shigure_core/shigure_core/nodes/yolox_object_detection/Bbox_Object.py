@@ -28,12 +28,13 @@ class BboxObject:
     	if (self._class_id==other._class_id)& bbox_x < 30 & bbox_y < 30: #& bbox_width < 30 & bbox_height < 30:
     		self._found_count += 1
     		self._started_at = other._started_at
-    		#print(self._found_count)
     		return True
     	else:
-        	other.not_match_count += 1
-        	self._not_found_count += 1
-            
+    		other.not_match_count += 1
+    		self._not_found_count += 1
+    		return False
+    		
+    	
     def not_mach(self, List):
     	if self.not_match_count > len(List):
     		return True
@@ -50,4 +51,3 @@ class BboxObject:
     	if self._not_found_count >= 500:
     		return True
     		
-        
