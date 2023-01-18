@@ -22,7 +22,7 @@ class YoloxObjectDetectionLogic:
 
     @staticmethod
     def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, color_img:np.ndarray, frame_object_list: List[FrameObject],
-                judge_params: JudgeParams, bboxes_wait_list: List[BboxObject], bring_in_list:List[BboxObject] )-> Dict[str, List[FrameObject]]:
+                judge_params: JudgeParams, bboxes_wait_list: List[BboxObject], bring_in_list:List[BboxObject] ,count:int)-> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
         :param yolox_bbox:
@@ -77,8 +77,8 @@ class YoloxObjectDetectionLogic:
         		#print(len(bbox_compare_list))
         		#print('bb')
         		
-        		#if (not bboxes_wait_list)or(count<len(yolox_bboxes)):
-        		bboxes_wait_list.append(bbox_item)
+        		if count == 0:
+        			bboxes_wait_list.append(bbox_item)
                     
         		#print('waitmax')
         		
@@ -144,8 +144,8 @@ class YoloxObjectDetectionLogic:
         for frame_object_item in frame_object_item_list:
         	frame_object = FrameObject(frame_object_item, judge_params.allow_empty_frame_count)
         	result[str(frame_object_item.detected_at)].append(frame_object)
-        
-        return result,bboxes_wait_list,bring_in_list
+        count = 1
+        return result,bboxes_wait_list,bring_in_list,count
     
     @staticmethod
     def update_item(left: FrameObjectItem, right: FrameObjectItem, mask_img: np.ndarray) -> Tuple[FrameObjectItem, np.ndarray]:
