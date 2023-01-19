@@ -68,7 +68,7 @@ class YoloxObjectDetectionLogic:
         	#is_exist_wait = False
         	#is_exist_bring = False
         		
-        	if (class_id == 'person')or(probability < 0.5):
+        	if (class_id == 'person')or(probability < 0.55)or(class_id == 'chair'):
         		del yolox_bboxes[i]
         	else:
         		brack_img = np.zeros(color_img.shape[:2])
@@ -186,8 +186,7 @@ class YoloxObjectDetectionLogic:
         						frame_object_item_list.remove(item)
         					union_find_tree.unite(prev_item, item)
         	if del_idx_list:
-        		
-        		for di in reversed(del_idx_list):
+                for di in reversed(del_idx_list):
         			print(wait_item_list[di]._class_id)
         			del wait_item_list[di]
         
