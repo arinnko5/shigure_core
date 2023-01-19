@@ -39,9 +39,10 @@ class YoloxObjectDetectionLogic:
         frame_object_item_list = []
         result = defaultdict(list)
         
+        #del_idx_reverse = []
         is_exist_start = False
-        is_exits_bring = False
         is_exist_wait = False
+        is_exist_bring = False
         
         # 検知が終了しているものは除外
         for frame_object in frame_object_list:
@@ -62,6 +63,10 @@ class YoloxObjectDetectionLogic:
         	height = ymax - y
         	width = xmax - x
         	class_id = bbox.class_id
+        	
+        	#is_exist_start = False
+        	#is_exist_wait = False
+        	#is_exist_bring = False
         		
         	if (class_id == 'person')or(probability < 0.5):
         		del yolox_bboxes[i]
@@ -75,27 +80,38 @@ class YoloxObjectDetectionLogic:
         		found_count = 0
         		not_found_count = 0
         		
-        		#比較リストにbbox追加
         		bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id,found_count, not_found_count)
-        		bbox_compare_list.append(bbox_item)
-        		#print(len(bbox_compare_list))
+        		#bbox_compare_list.append(bbox_item)
+        		#print(bbox_item._class_id)
         		
         		#一番最初の物体をstart_istに登録
         		if count == 0:
         			start_item_list.append(bbox_item)
-        			print(count)
-        			print(len(start_item_list))
+        			#print(count)
+        			#print(bbox_item._class_id)
                     
         		else:
+        			#print(len(start_item_list))
+        			#print(len(bring_in_list))
+        			#print(len(wait_item_list))
+        			
         			if start_item_list:
         				for i, start_item in enumerate(start_item_list):
         					#startの中身すべてと照会
         					if start_item.is_match(bbox_item):
         						is_exist_start = True
+        						#print('start_item_match')
+        						#print(is_exist_start)
+        						#print(is_exist_wait)
+        						#print(is_exist_bring)
+        						#print(bbox_item._class_id)
         						break # 一致した
         			
         			if bring_in_list and (is_exist_start == False):
-        				for i, bring_item in enumerate(bring_in_list):
+        				#print(is_exist_start)
+        				#print(is_exist_wait)
+        				#print(is_exist_bring)
+        				for i, bring_in_item in enumerate(bring_in_list):
         					# 持ち込み確定リストの中身すべてと照会
         					if bring_in_item.is_match(bbox_item):
         						bring_in_item.reset_not_found_count()
@@ -112,20 +128,27 @@ class YoloxObjectDetectionLogic:
         						break
         			# 初期フレームにも、持ち込みリストにも、waitリストにもないものは、waitリストに追加
         			if (is_exist_start == False) and (is_exist_bring == False) and (is_exist_wait == False):
+        				print('wait_item_append')
         				wait_item_list.append(bbox_item)
+        				#print(len(wait_item_list))
+        				
+        			is_exist_start = False
+        			is_exist_wait = False
+        			is_exist_bring = False
         				
         	if bring_in_list:
         		del_idx_list = []
+        		#print(len(bring_in_list))
         		for i, bring_in_item in enumerate(bring_in_list):
-        			if bring_in_item.not_fount_count != 0:
+        			if bring_in_item._not_found_count != 0:
         				bring_in_item.add_not_found_count()
         			#bring_in_list に登録されたてほやほや
-        			if bring_in_item.not_found_count == 0 and bring_in_item.found_count > 0:
+        			if bring_in_item._not_found_count == 0 and bring_in_item._found_count > 0:
         				bring_in_item.add_not_found_count()
         				
-        			if bringin_item.is_not_found():
+        			if bring_in_item.is_not_found():
         				action = DetectedObjectActionEnum.TAKE_OUT
-        				item = FrameObjectItem(action, bringin_item._bounding_box, bringin_item._size, bringin_item._mask, bringin_item._found_at,wait_item._class_id)
+        				item = FrameObjectItem(action, bring_in_item._bounding_box, bring_in_item._size, bring_in_item._mask, bring_in_item._found_at,bring_in_item._class_id)
         				frame_object_item_list.append(item)
         				del_idx_list.append(i)
         				for prev_item, frame_object in prev_frame_object_dict.items():
@@ -138,11 +161,13 @@ class YoloxObjectDetectionLogic:
         							union_find_tree.add(item)
         							frame_object_item_list.remove(item)
         						union_find_tree.unite(prev_item, item)
-        		for di in del_idx_list.reverse():
-        			del bring_in_list[di]
+        		if del_idx_list:
+        			for di in reversed(del_idx_list):
+        				del bring_in_list[di]
         
         if wait_item_list:
         	del_idx_list = []
+        	print(len(wait_item_list))
         	for i, wait_item in enumerate(wait_item_list):
         		if wait_item.is_found():
         			action = DetectedObjectActionEnum.BRING_IN
@@ -160,8 +185,11 @@ class YoloxObjectDetectionLogic:
         						union_find_tree.add(item)
         						frame_object_item_list.remove(item)
         					union_find_tree.unite(prev_item, item)
-        	for di in del_idx_list.reverse():
-        		del wait_item_list[di]
+        	if del_idx_list:
+        		
+        		for di in reversed(del_idx_list):
+        			print(wait_item_list[di]._class_id)
+        			del wait_item_list[di]
         
         # リンクした範囲を1つにまとめる
         groups = union_find_tree.all_group_members().values()
