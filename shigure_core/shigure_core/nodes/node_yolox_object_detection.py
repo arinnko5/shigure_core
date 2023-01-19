@@ -63,9 +63,9 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self.yolox_object_detection_logic = YoloxObjectDetectionLogic()
 		
 		self.frame_object_list: List[FrameObject] = []
-		self.bboxes_start_list:List[BboxObject]= []
+		self.start_item_list:List[BboxObject]= []
 		self.bring_in_list:List[BboxObject] = []
-		self.bbox_wait_list:List[BboxObject] = []
+		self.wait_item_list:List[BboxObject] = []
 		self._color_img_buffer: List[np.ndarray] = []
 		self._color_img_frames = ColorImageFrames()
 		self._buffer_size = 90
@@ -92,20 +92,20 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 				self.object_list.append(cv2.resize(black_img.copy(), (width // 2, height // 2)))
 			#print('brack')
 		
-		if len(self._color_img_buffer) > 10:
+		if len(self._color_img_buffer) > 30:
 			self._color_img_buffer = self._color_img_buffer[1:]
-			self._color_img_frames.get(-10).new_image = color_img
+			self._color_img_frames.get(-30).new_image = color_img
 		self._color_img_buffer.append(color_img)
 		
 		timestamp = Timestamp(color_img_src.header.stamp.sec, color_img_src.header.stamp.nanosec)
 		frame = ColorImageFrame(timestamp, self._color_img_buffer[0], color_img)
 		self._color_img_frames.add(frame)
-		frame_object_dict,bboxes_start_list,bring_in_list,bbox_wait_list,count= self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.bboxes_start_list,self.bring_in_list,self.bbox_wait_list,self._count)
+		frame_object_dict,start_item_list,bring_in_list,wait_item_list,count= self.yolox_object_detection_logic.execute(yolox_bbox_src, timestamp,color_img,self.frame_object_list,self._judge_params,self.start_item_list,self.bring_in_list,self.wait_item_list,self._count)
 		
 		if self._count == 0:
-			self.bboxes_start_list = bboxes_start_list
+			self.start_item_list = start_item_list
 		self.bring_in_list = bring_in_list
-		self.bbox_wait_list = bbox_wait_list
+		self.waitt_item_list = wait_item_list
 		count = 1
 		self._count = count
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
@@ -136,7 +136,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			self.detection_publisher.publish(detected_object_list)
 			if self.is_debug_mode:
-				for bbox in bboxes_start_list:
+				for bbox in start_item_list:
 					bounding_box_src = bbox._bounding_box
 					x, y, width, height = bounding_box_src.items
 					color = random.choice(self._colors)
