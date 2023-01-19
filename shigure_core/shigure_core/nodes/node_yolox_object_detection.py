@@ -70,7 +70,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		self._color_img_frames = ColorImageFrames()
 		self._buffer_size = 90
 		
-		self._judge_params = JudgeParams(100)
+		self._judge_params = JudgeParams(50)
 		self._count = 0
 		
 		self._colors = []
@@ -105,7 +105,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		if self._count == 0:
 			self.start_item_list = start_item_list
 		self.bring_in_list = bring_in_list
-		self.waitt_item_list = wait_item_list
+		self.wait_item_list = wait_item_list
 		count = 1
 		self._count = count
 		self.frame_object_list = list(chain.from_iterable(frame_object_dict.values()))
@@ -139,7 +139,8 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 				for bbox in start_item_list:
 					bounding_box_src = bbox._bounding_box
 					x, y, width, height = bounding_box_src.items
-					color = random.choice(self._colors)
+					#color = random.choice(self._colors)
+					color = (255,140,0)
 					result_img = cv2.rectangle(color_img, (x, y), (x + width, y + height), color, thickness=3)
 					brack_img = np.zeros_like(color_img)
 					img = self.print_fps(brack_img)
