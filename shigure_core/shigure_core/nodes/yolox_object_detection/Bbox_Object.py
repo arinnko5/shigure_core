@@ -25,7 +25,7 @@ class BboxObject:
     	bbox_y = abs(self._bounding_box._y - other._bounding_box._y)
     	bbox_width = abs(self._bounding_box._width - other._bounding_box._width)
     	bbox_height = abs(self._bounding_box._height - other._bounding_box._height)
-    	if (self._class_id==other._class_id)& bbox_x < 30 & bbox_y < 30: #& bbox_width < 30 & bbox_height < 30:
+    	if (self._class_id==other._class_id)and(bbox_x < 50) and (bbox_y < 50): #& bbox_width < 30 & bbox_height < 30:
     		
     		return True
     	else:
@@ -38,7 +38,7 @@ class BboxObject:
     def add_not_found_count(self):
     	self._not_found_count += 1
     	
-    def reset_fount_count(self):
+    def reset_found_count(self):
     	self._found_count == 0
     
     def reset_not_found_count(self):
@@ -56,3 +56,5 @@ class BboxObject:
     	if self._not_found_count >= 100:
     		return True
     		
+
+
