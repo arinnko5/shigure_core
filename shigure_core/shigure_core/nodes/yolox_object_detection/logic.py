@@ -68,7 +68,7 @@ class YoloxObjectDetectionLogic:
         	#is_exist_wait = False
         	#is_exist_bring = False
         		
-        	if (class_id == 'person')or(probability < 0.55)or(class_id == 'chair'):
+        	if (class_id == 'person')or(probability < 0.5)or(class_id == 'chair')or(class_id == 'laptop')or(class_id =='tv' ):
         		del yolox_bboxes[i]
         	else:
         		brack_img = np.zeros(color_img.shape[:2])
@@ -131,6 +131,7 @@ class YoloxObjectDetectionLogic:
         				print('wait_item_append')
         				wait_item_list.append(bbox_item)
         				#print(len(wait_item_list))
+        				print(bbox_item._class_id)
         				
         			is_exist_start = False
         			is_exist_wait = False
@@ -167,7 +168,7 @@ class YoloxObjectDetectionLogic:
         
         if wait_item_list:
         	del_idx_list = []
-        	print(len(wait_item_list))
+        	#print(len(wait_item_list))
         	for i, wait_item in enumerate(wait_item_list):
         		if wait_item.is_found():
         			action = DetectedObjectActionEnum.BRING_IN
@@ -186,8 +187,9 @@ class YoloxObjectDetectionLogic:
         						frame_object_item_list.remove(item)
         					union_find_tree.unite(prev_item, item)
         	if del_idx_list:
-                for di in reversed(del_idx_list):
-        			print(wait_item_list[di]._class_id)
+        		
+        		for di in reversed(del_idx_list):
+        			#print(wait_item_list[di]._class_id)
         			del wait_item_list[di]
         
         # リンクした範囲を1つにまとめる
