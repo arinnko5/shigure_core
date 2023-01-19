@@ -53,7 +53,7 @@ class BboxObject:
     		return True
     
     def is_not_found(self):
-    	if self._not_found_count >= 100:
+    	if self._not_found_count >= 20:
     		return True
     		
 
