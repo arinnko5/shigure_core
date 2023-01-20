@@ -97,6 +97,7 @@ class YoloxObjectDetectionLogic:
         					#持ち込み確定リストの中身すべてと照会
         					if bring_in_item.is_match(bbox_item):
         						bring_in_item.reset_not_found_count()
+        						print('cccc')
         						bring_in_item.reset_found_count()
         						is_exist_bring = True
         						break # 一致した
@@ -119,8 +120,8 @@ class YoloxObjectDetectionLogic:
         			if (is_exist_start == False) and (is_exist_bring == False) and (is_exist_wait == False):
         				print('wait_item_append')
         				wait_item_list.append(bbox_item)
-        				#print(len(wait_item_list))
-        				wait = []
+        				print(bbox_item._class_id)
+        				#wait = []
         				#for i in wait_item_list:
         					#wait.append(i._class_id)
         					#wait.append(i._bounding_box._x)
@@ -139,11 +140,14 @@ class YoloxObjectDetectionLogic:
         		for i, bring_in_item in enumerate(bring_in_list):
         			if bring_in_item._not_found_count != 0:
         				bring_in_item.add_not_found_count()
+        				#print('aaaa')
+        				#print(bring_in_item._not_found_count)
         			#bring_in_list に登録されたてほやほや
-        			#if bring_in_item._not_found_count == 0 and bring_in_item._found_count > 0:
-        				#bring_in_item.add_not_found_count()
+        			if bring_in_item._not_found_count == 0 and bring_in_item._found_count > 0:
+        				bring_in_item.add_not_found_count()
         				
         			if bring_in_item.is_not_found():
+        				print('bbbb')
         				action = DetectedObjectActionEnum.TAKE_OUT
         				item = FrameObjectItem(action, bring_in_item._bounding_box, bring_in_item._size, bring_in_item._mask, bring_in_item._found_at,bring_in_item._class_id)
         				frame_object_item_list.append(item)
@@ -188,7 +192,7 @@ class YoloxObjectDetectionLogic:
         			#print(wait_item_list[di]._class_id)
         			del wait_item_list[di]
         			
-        	wait2 = []
+        	#wait2 = []
         	#for i in wait_item_list:
         		#wait2.append(i._class_id)
         		#wait2.append(i._bounding_box._x)
@@ -197,7 +201,7 @@ class YoloxObjectDetectionLogic:
         		#wait2.append(i._not_found_count)
         	#print('wait2')
         	#print(wait2)
-        	bring = []
+        	#bring = []
         	#for j in bring_in_list:
         		#bring.append(j._class_id)
         		#bring.append(j._bounding_box._x)
