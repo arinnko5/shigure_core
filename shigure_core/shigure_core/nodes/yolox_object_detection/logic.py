@@ -68,7 +68,7 @@ class YoloxObjectDetectionLogic:
         	#is_exist_wait = False
         	#is_exist_bring = False
         		
-        	if (class_id == 'person')or(probability < 0.5)or(class_id == 'chair')or(class_id == 'laptop')or(class_id =='tv' ):
+        	if (class_id == 'person')or(probability < 0.5)or(class_id == 'chair')or(class_id == 'laptop')or(class_id =='tv' )or(class_id == 'book'):
         		del yolox_bboxes[i]
         	else:
         		brack_img = np.zeros(color_img.shape[:2])
