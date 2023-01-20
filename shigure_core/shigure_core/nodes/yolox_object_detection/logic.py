@@ -120,7 +120,14 @@ class YoloxObjectDetectionLogic:
         				print('wait_item_append')
         				wait_item_list.append(bbox_item)
         				#print(len(wait_item_list))
-        				print(bbox_item._class_id)
+        				wait = []
+        				#for i in wait_item_list:
+        					#wait.append(i._class_id)
+        					#wait.append(i._bounding_box._x)
+        					#wait.append(i._bounding_box._y)
+        					#wait.append(i._found_count)
+        					#wait.append(i._not_found_count)
+        				#print(wait)
         				
         			is_exist_start = False
         			is_exist_wait = False
@@ -133,8 +140,8 @@ class YoloxObjectDetectionLogic:
         			if bring_in_item._not_found_count != 0:
         				bring_in_item.add_not_found_count()
         			#bring_in_list に登録されたてほやほや
-        			if bring_in_item._not_found_count == 0 and bring_in_item._found_count > 0:
-        				bring_in_item.add_not_found_count()
+        			#if bring_in_item._not_found_count == 0 and bring_in_item._found_count > 0:
+        				#bring_in_item.add_not_found_count()
         				
         			if bring_in_item.is_not_found():
         				action = DetectedObjectActionEnum.TAKE_OUT
@@ -180,7 +187,27 @@ class YoloxObjectDetectionLogic:
         		for di in reversed(del_idx_list):
         			#print(wait_item_list[di]._class_id)
         			del wait_item_list[di]
-        
+        			
+        	wait2 = []
+        	#for i in wait_item_list:
+        		#wait2.append(i._class_id)
+        		#wait2.append(i._bounding_box._x)
+        		#wait2.append(i._bounding_box._y)
+        		#wait2.append(i._found_count)
+        		#wait2.append(i._not_found_count)
+        	#print('wait2')
+        	#print(wait2)
+        	bring = []
+        	#for j in bring_in_list:
+        		#bring.append(j._class_id)
+        		#bring.append(j._bounding_box._x)
+        		#bring.append(j._bounding_box._y)
+        		#bring.append(j._found_count)
+        		#bring.append(j._not_found_count)
+        	#print('bring')
+        	#print(bring)
+        			
+        			
         # リンクした範囲を1つにまとめる
         groups = union_find_tree.all_group_members().values()
         for items in groups:
