@@ -22,7 +22,7 @@ class YoloxObjectDetectionLogic:
 
     @staticmethod
     def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, color_img:np.ndarray, frame_object_list: List[FrameObject],
-                judge_params: JudgeParams, bboxes_start_list: List[BboxObject], bring_in_list:List[BboxObject],bbox_wait_list:[BboxObject],count:int )-> Dict[str, List[FrameObject]]:
+                judge_params: JudgeParams, start_item_list: List[BboxObject], bring_in_list:List[BboxObject],wait_item_list:[BboxObject],count:int )-> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
         :param yolox_bbox:
@@ -39,6 +39,11 @@ class YoloxObjectDetectionLogic:
         frame_object_item_list = []
         result = defaultdict(list)
         
+        #del_idx_reverse = []
+        is_exist_start = False
+        is_exist_wait = False
+        is_exist_bring = False
+        
         # 検知が終了しているものは除外
         for frame_object in frame_object_list:
             if frame_object.is_finished():
@@ -47,8 +52,11 @@ class YoloxObjectDetectionLogic:
                 prev_frame_object_dict[frame_object.item] = frame_object
         frame_object_list = list(prev_frame_object_dict.values())
 
-        yolox_bboxes = yolox_bbox.bounding_boxes
+        yolox_bboxes = yolox_bbox.bounding_boxes #yolox-rosから受け取った物体集合から物体一つずつ取り出す
+        FHIST_SIZE = 10 # 検知履歴を遡って参照する範囲
         
+        # 届いた現フレームのyolox-bbox群情報を整理して新しくリストにまとめる
+        bbox_item_list = []
         for i, bbox in enumerate(yolox_bboxes):
         	probability = bbox.probability
         	x = bbox.xmin
@@ -58,81 +66,134 @@ class YoloxObjectDetectionLogic:
         	height = ymax - y
         	width = xmax - x
         	class_id = bbox.class_id
-        		
-        	if (class_id == 'person')or(probability < 0.5):
-        		del yolox_bboxes[i]
+        	
+        	if (probability < 0.5) or (class_id in ['person','chair','laptop','tv','microwave','refrigerator']):
+        		pass
         	else:
         		brack_img = np.zeros(color_img.shape[:2])
         		brack_img[y:y + height, x:x + width] = 255
         		mask_img:np.ndarray = brack_img[y:y + height, x:x + width]
         		
-        		bounding_box = BoundingBox(x, y, width, height)
-        		area = width*height
-        		found_count = 0
-        		not_found_count = 0
+        		bounding_box = BoundingBox(x, y, width, height)　# BBOX(左上端座標, 幅, 高さ)
+        		area = width*height　# BBOXの面積
         		
-        		#比較リストにbbox追加
-        		bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id,found_count, not_found_count)
-        		bbox_compare_list.append(bbox_item)
-        		#print(len(bbox_compare_list))
+        		bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id)
+        		bbox_item_list.append(bbox_item)
         		
-        		#最初に流れてくる物体をbboxes_start_listリストへ
-        		if count == 0:
-        			bboxes_start_list.append(bbox_item)
-        			print(count)
-        			print(len(bboxes_start_list))
-                    
-        		#print('waitmax')
         		
-        		#待機リストの要素とbbox_itemが同じかどうか+マッチしないなら新規持ち込みリストへ
-        		for i,start_item in enumerate(bboxes_start_list):
-        			if start_item.is_match(bbox_item) == False:
-        				bbox_wait_list.append(bbox_item)
-        				print('wait_list')
-        				print(len(bbox_wait_list))
+        #一番最初の物体をstart_istに登録
+        if count == 0:
+        	if bbox_item_list:
+        		start_item_list = copy.deepcopy(bbox_item_list)
+        else:
+        	if start_item_list:
+        		# 初期状態リストと現フレームリストを全照合
+        		for start_item in start_item_list:
+        			for bbox_item in bbox_item_list:
+        				if start_item.is_match(bbox_item):  # その初期状態アイテムと一致する現フレームアイテムがあったら
+        				bbox_item.is_exist_start = True # その現フレームアイテムの「初期状態リストに存在する？」フラグをオン
+        				break
         				
-        		if count != 0:
-        			for i, wait_item in enumerate(bbox_wait_list):
-        				if wait_item.is_match(bbox_item):
-        					if wait_item.found_count_is():
-        						action = DetectedObjectActionEnum.BRING_IN
-        						item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at,wait_item._class_id)
-        						frame_object_item_list.append(item)
-        						bring_in_list.append(wait_item)
-        						del bbox_wait_list[i]
-        						for prev_item, frame_object in prev_frame_object_dict.items():
-        							is_matched, size = prev_item.is_match(item)
-        							if is_matched:
-        								if not union_find_tree.has_item(prev_item):
-        									union_find_tree.add(prev_item)
-        									frame_object_list.remove(frame_object)
-        								if not union_find_tree.has_item(item):
-        									union_find_tree.add(item)
-        									frame_object_item_list.remove(item)
-        								union_find_tree.unite(prev_item, item)
-        								
-        			#持ち込みリスト要素とbbox_itemを比べてtake_out判定
-        			for i,bringin_item in enumerate(bring_in_list):
-        				if not bringin_item.is_match(bbox_item):
-        					if bringin_item.not_found_count_is():
-        						action = DetectedObjectActionEnum.TAKE_OUT
-        						item = FrameObjectItem(action, bringin_item._bounding_box, bringin_item._size, bringin_item._mask, bringin_item._started_at,wait_item._class_id)
-        						frame_object_item_list.append(item)
-        						del bring_in_list[i]
-        						for prev_item, frame_object in prev_frame_object_dict.items():
-        							is_matched, size = prev_item.is_match(item)
-        							if is_matched:
-        								if not union_find_tree.has_item(prev_item):
-        									union_find_tree.add(prev_item)
-        									frame_object_list.remove(frame_object)
-        								if not union_find_tree.has_item(item):
-        									union_find_tree.add(item)
-        									frame_object_item_list.remove(item)
-        								union_find_tree.unite(prev_item, item)
+        	if bring_in_list:
+        		del_idx_list = []
+        		# 持ち込み確定リストと現フレームリストを全照合
+        		for i, bring_in_item in enumerate(bring_in_list):
+        			for bbox_item in bbox_item_list:
+        				if bbox_item.is_exist_start: # 初期状態リストにすでに存在する現フレームアイテムは無視
+        					continue
+        				if bring_in_item.is_match(bbox_item): # その持ち込みアイテムと一致する現フレームアイテムがあったら
+        					bring_in_item.fhist.append(True) # その持ち込みアイテムの検知履歴リストにTrueを追加
+        					bbox_item.is_exist_bring = True # その現フレームアイテムの「持ち込み確定リストに存在する？」フラグをオン
+        					break
+        			else:
+        				bring_in_item.fhist.append(False) # 最後までどれとも一致しなかったらその持ち込みアイテムの検知履歴リストにFalseを追加
+        				
+        			if len(bring_in_item.fhist) >= FHIST_SIZE: # その持ち込みアイテムの検知履歴が十分に溜まっていたら
+        				found_rate = sum(bring_in_item.fhist) / len(bring_in_item.fhist) # 検知率(履歴リスト中のTrueの存在率)を計算
+        				if found_rate < 0.3: # 検知率が30%未満だったら
+        					del_idx_list.append(i) # 持ち去りイベント発生(持ち込み確定リストから削除予約)
+        					action = DetectedObjectActionEnum.TAKE_OUT
+        					item = FrameObjectItem(
+        						action,
+        						bring_in_item._bounding_box,
+        						bring_in_item._size,
+        						bring_in_item._mask, 
+        						bring_in_item._found_at,
+        						bring_in_item._class_id
+        					)
+        					frame_object_item_list.append(item)
+        					for prev_item, frame_object in prev_frame_object_dict.items():
+        						is_matched, size = prev_item.is_match(item)
+        						if is_matched:
+        							if not union_find_tree.has_item(prev_item):
+        								union_find_tree.add(prev_item)
+        								frame_object_list.remove(frame_object)
+        							if not union_find_tree.has_item(item):
+        								union_find_tree.add(item)
+        								frame_object_item_list.remove(item)
+        							union_find_tree.unite(prev_item, item)
+        				bring_in_item.fhist = bring_in_item.fhist[-(FHIST_SIZE-1):]  # その持ち込みアイテムの検知履歴リストを最新分のみ確保して更新
+        		#持ち去られたアイテムを持ち込み確定リストから削除
+        		if del_idx_list:
+        			for di in reversed(del_idx_list):
+        				del bring_in_list[di]
+        				
+        	if wait_item_list:
+        		del_idx_list = []
+        		# 待機リストと現フレームリストを全照合
+        		for i, wait_item in enumerate(wait_item_list):
+        			for bbox_item in bbox_item_list:
+        				if bbox_item.is_exist_start or bbox_item.is_exist_bring: # 初期状態リスト or 持ち込み確定リストにすでに存在する現フレームアイテムは無視
+        					continue
+        				if wait_item.is_match(bbox_item): #その待機アイテムと一致する現フレームアイテムがあったら
+        					wait_item.fhist.append(True) # その待機アイテムの検知履歴リストにTrueを追加
+        					bbox_item.is_exist_wait = True # その現フレームアイテムの「待機リストに存在する？」フラグをオン
+        					break
+        			else:
+        				bring_in_item.fhist.append(False) #最後までどれとも一致しなかったらその待機アイテムの検知履歴リストにFalseを追加
+        				
+        			if len(wait_item.fhist) >= FHIST_SIZE: # その待機アイテムの検知履歴が十分に溜まっていたら
+        				found_rate = sum(bring_in_item.fhist) / len(bring_in_item.fhist) # 検知率(検知履歴リスト中のTrueの存在率)を計算
+        				if (found_rate < 0.3) or (found_rate > 0.7): # 検知率が30%未満 or 70%超過だったら
+        					del_idx_list.append(i) # 幻だった or 持ち込みイベント発生(待機リストから削除予約)
+        				if found_rate > 0.7: # 持ち込みイベント発生の場合
+        					action = DetectedObjectActionEnum.BRING_IN
+        					item = FrameObjectItem(
+        						action,
+        						wait_item._bounding_box, 
+        						wait_item._size, 
+        						wait_item._mask, 
+        						wait_item._found_at,
+        						wait_item._class_id
+        					)
+        					frame_object_item_list.append(item)
+        					bring_in_list.append(wait_item)
+        					for prev_item, frame_object in prev_frame_object_dict.items():
+        						is_matched, size = prev_item.is_match(item)
+        						if is_matched:
+        							if not union_find_tree.has_item(prev_item):
+        								union_find_tree.add(prev_item)
+        								frame_object_list.remove(frame_object)
+        							if not union_find_tree.has_item(item):
+        								union_find_tree.add(item)
+        								frame_object_item_list.remove(item)
+        							union_find_tree.unite(prev_item, item)
+        				wait_item.fhist = wait_item.fhist[-(FHIST_SIZE-1):] # その待機アイテムの検知履歴リストを最新分のみ確保して更新
+        		# 持ち込まれた or 幻だったアイテムを待機リストから削除
+        		if del_idx_list:
+        			for di in reversed(del_idx_list):
+        				del wait_item_list[di]
+        				
+        	# 初期状態リスト・持ち込み確定リスト・待機リストいずれにも存在しない現フレームアイテムは、待機リストに追加
+        	for bbox_item in bbox_item_list:
+        		if not(bbox_item.is_exist_start or bbox_item.is_exist_bring or bbox_item.is_exist_wait):
+        			print(f'wait_item_append : {bbox_item._class_id}')
+        			wait_item_list.append(bbox_item)
+        			#wait = [[i._class_id, i._bounding_box._x, i._bounding_box._y, i._found_count, i._not_found_count] for i in wait_item_list]
+        			#_ = [print(w) for w in wait]
         			
-        		
-        		
-        							
+        	
+        			
         # リンクした範囲を1つにまとめる
         groups = union_find_tree.all_group_members().values()
         for items in groups:
@@ -152,7 +213,7 @@ class YoloxObjectDetectionLogic:
         	frame_object = FrameObject(frame_object_item, judge_params.allow_empty_frame_count)
         	result[str(frame_object_item.detected_at)].append(frame_object)
         	
-        return result,bboxes_start_list,bring_in_list,bbox_wait_list,count
+        return result,start_item_list,bring_in_list,wait_item_list,count
     
     @staticmethod
     def update_item(left: FrameObjectItem, right: FrameObjectItem, mask_img: np.ndarray) -> Tuple[FrameObjectItem, np.ndarray]:
