@@ -91,8 +91,8 @@ class YoloxObjectDetectionLogic:
         		for start_item in start_item_list:
         			for bbox_item in bbox_item_list:
         				if start_item.is_match(bbox_item):  # その初期状態アイテムと一致する現フレームアイテムがあったら
-        				    bbox_item.is_exist_start = True # その現フレームアイテムの「初期状態リストに存在する？」フラグをオン
-        				    break
+        					bbox_item.is_exist_start = True # その現フレームアイテムの「初期状態リストに存在する？」フラグをオン
+        					break
         				
         	if bring_in_list:
         		del_idx_list = []
