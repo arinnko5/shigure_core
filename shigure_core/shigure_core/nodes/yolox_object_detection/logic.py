@@ -22,7 +22,7 @@ class YoloxObjectDetectionLogic:
 
     @staticmethod
     def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, color_img:np.ndarray, frame_object_list: List[FrameObject],
-                judge_params: JudgeParams, bboxes_wait_list: List[BboxObject], bring_in_list:List[BboxObject] ,count:int)-> Dict[str, List[FrameObject]]:
+                judge_params: JudgeParams, start_item_list: List[BboxObject], bring_in_list:List[BboxObject],wait_item_list:[BboxObject],count:int )-> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
         :param yolox_bbox:
@@ -38,6 +38,11 @@ class YoloxObjectDetectionLogic:
         union_find_tree: UnionFindTree[FrameObjectItem] = UnionFindTree[FrameObjectItem]()
         frame_object_item_list = []
         result = defaultdict(list)
+        
+        #del_idx_reverse = []
+        is_exist_start = False
+        is_exist_wait = False
+        is_exist_bring = False
         
         # 検知が終了しているものは除外
         for frame_object in frame_object_list:
@@ -58,8 +63,12 @@ class YoloxObjectDetectionLogic:
         	height = ymax - y
         	width = xmax - x
         	class_id = bbox.class_id
+        	
+        	#is_exist_start = False
+        	#is_exist_wait = False
+        	#is_exist_bring = False
         		
-        	if (class_id == 'person')or(probability < 0.5):
+        	if (class_id == 'person')or(probability < 0.5)or(class_id == 'chair')or(class_id == 'laptop')or(class_id =='tv' )or(class_id == 'book'):
         		del yolox_bboxes[i]
         	else:
         		brack_img = np.zeros(color_img.shape[:2])
@@ -71,61 +80,138 @@ class YoloxObjectDetectionLogic:
         		found_count = 0
         		not_found_count = 0
         		
-        		#比較リストにbbox追加
         		bbox_item = BboxObject(bounding_box, area, mask_img, started_at,class_id,found_count, not_found_count)
-        		bbox_compare_list.append(bbox_item)
-        		#print(len(bbox_compare_list))
-        		#print('bb')
+        		#bbox_compare_list.append(bbox_item)
+        		#print(bbox_item._class_id)
         		
+        		#一番最初の物体をstart_istに登録
         		if count == 0:
-        			bboxes_wait_list.append(bbox_item)
+        			start_item_list.append(bbox_item)
+        			#print(count)
+        			#print(bbox_item._class_id)
                     
-        		#print('waitmax')
+        		else:
+        			
+        			if bring_in_list:
+        				for i, bring_in_item in enumerate(bring_in_list):
+        					#持ち込み確定リストの中身すべてと照会
+        					if bring_in_item.is_match(bbox_item):
+        						bring_in_item.reset_not_found_count()
+        						#print('cccc')
+        						bring_in_item.reset_found_count()
+        						is_exist_bring = True
+        						break # 一致した
+        			
+        			if wait_item_list and (is_exist_bring == False):
+        				for i, wait_item in enumerate(wait_item_list):
+        					# waitリストの中身すべてと照会
+        					if wait_item.is_match(bbox_item):
+        						wait_item.add_found_count()
+        						is_exist_wait = True
+        						break # 一致した
+        						
+        			if start_item_list and (is_exist_bring == False) and (is_exist_wait == False):
+        				for i, start_item in enumerate(start_item_list):
+        					#waitの中身すべてと照会
+        					if start_item.is_match(bbox_item):
+        						is_exist_start = True
+        						break
+        			# 初期フレームにも、持ち込みリストにも、waitリストにもないものは、waitリストに追加
+        			if (is_exist_start == False) and (is_exist_bring == False) and (is_exist_wait == False):
+        				print('wait_item_append')
+        				wait_item_list.append(bbox_item)
+        				print(bbox_item._class_id)
+        				#wait = []
+        				#for i in wait_item_list:
+        					#wait.append(i._class_id)
+        					#wait.append(i._bounding_box._x)
+        					#wait.append(i._bounding_box._y)
+        					#wait.append(i._found_count)
+        					#wait.append(i._not_found_count)
+        				#print(wait)
+        				
+        			is_exist_start = False
+        			is_exist_wait = False
+        			is_exist_bring = False
+        				
+        	if bring_in_list:
+        		del_idx_list = []
+        		#print(len(bring_in_list))
+        		for i, bring_in_item in enumerate(bring_in_list):
+        			if bring_in_item._not_found_count != 0:
+        				bring_in_item.add_not_found_count()
+        				#print('aaaa')
+        				#print(bring_in_item._not_found_count)
+        			#bring_in_list に登録されたてほやほや
+        			if bring_in_item._not_found_count == 0 and bring_in_item._found_count > 0:
+        				bring_in_item.add_not_found_count()
+        				
+        			if bring_in_item.is_not_found():
+        				print('bbbb')
+        				action = DetectedObjectActionEnum.TAKE_OUT
+        				item = FrameObjectItem(action, bring_in_item._bounding_box, bring_in_item._size, bring_in_item._mask, bring_in_item._found_at,bring_in_item._class_id)
+        				frame_object_item_list.append(item)
+        				del_idx_list.append(i)
+        				for prev_item, frame_object in prev_frame_object_dict.items():
+        					is_matched, size = prev_item.is_match(item)
+        					if is_matched:
+        						if not union_find_tree.has_item(prev_item):
+        							union_find_tree.add(prev_item)
+        							frame_object_list.remove(frame_object)
+        						if not union_find_tree.has_item(item):
+        							union_find_tree.add(item)
+        							frame_object_item_list.remove(item)
+        						union_find_tree.unite(prev_item, item)
+        		if del_idx_list:
+        			for di in reversed(del_idx_list):
+        				del bring_in_list[di]
+        
+        if wait_item_list:
+        	del_idx_list = []
+        	#print(len(wait_item_list))
+        	for i, wait_item in enumerate(wait_item_list):
+        		if wait_item.is_found():
+        			action = DetectedObjectActionEnum.BRING_IN
+        			item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._found_at,wait_item._class_id)
+        			frame_object_item_list.append(item)
+        			bring_in_list.append(wait_item)
+        			del_idx_list.append(i)
+        			for prev_item, frame_object in prev_frame_object_dict.items():
+        				is_matched, size = prev_item.is_match(item)
+        				if is_matched:
+        					if not union_find_tree.has_item(prev_item):
+        						union_find_tree.add(prev_item)
+        						frame_object_list.remove(frame_object)
+        					if not union_find_tree.has_item(item):
+        						union_find_tree.add(item)
+        						frame_object_item_list.remove(item)
+        					union_find_tree.unite(prev_item, item)
+        	if del_idx_list:
         		
-        		#待機リストの要素とbbox_itemが同じかどうか+bring_in判定
-        		for i,wait_item in enumerate(bboxes_wait_list):
-        			#print(len(bboxes_wait_list))
-        			if wait_item.is_match(bbox_item):
-        				if wait_item.found_count_is():
-        					#print('match')
-        					action = DetectedObjectActionEnum.BRING_IN
-        					item = FrameObjectItem(action, wait_item._bounding_box, wait_item._size, wait_item._mask, wait_item._started_at,wait_item._class_id)
-        					frame_object_item_list.append(item)
-        					bring_in_list.append(wait_item)
-        					#print(len(bring_in_list))
-        					#del bboxes_wait_list[i]	
-        					for prev_item, frame_object in prev_frame_object_dict.items():
-        						is_matched, size = prev_item.is_match(item)
-        						if is_matched:
-        							if not union_find_tree.has_item(prev_item):
-        								union_find_tree.add(prev_item)
-        								frame_object_list.remove(frame_object)
-        							if not union_find_tree.has_item(item):
-        								union_find_tree.add(item)
-        								frame_object_item_list.remove(item)
-        							union_find_tree.unite(prev_item, item)
-        			else:
-        				if bbox_item.not_mach(bboxes_wait_list):
-        					bboxes_wait_list.append(bbox_item)
-        		#持ち込みリスト要素とbbox_itemを比べてtake_out判定
-        		for i,bringin_item in enumerate(bring_in_list):
-        			if bringin_item.is_match(bbox_item):
-        				if bringin_item.not_found_count_is():
-        					action = DetectedObjectActionEnum.TAKE_OUT
-        					item = FrameObjectItem(action, bringin_item._bounding_box, bringin_item._size, bringin_item._mask, bringin_item._started_at,wait_item._class_id)
-        					frame_object_item_list.append(item)
-        					del bring_in_list[i]
-        					for prev_item, frame_object in prev_frame_object_dict.items():
-        						is_matched, size = prev_item.is_match(item)
-        						if is_matched:
-        							if not union_find_tree.has_item(prev_item):
-        								union_find_tree.add(prev_item)
-        								frame_object_list.remove(frame_object)
-        							if not union_find_tree.has_item(item):
-        								union_find_tree.add(item)
-        								frame_object_item_list.remove(item)
-        							union_find_tree.unite(prev_item, item)
-        							
+        		for di in reversed(del_idx_list):
+        			#print(wait_item_list[di]._class_id)
+        			del wait_item_list[di]
+        			
+        	#wait2 = []
+        	#for i in wait_item_list:
+        		#wait2.append(i._class_id)
+        		#wait2.append(i._bounding_box._x)
+        		#wait2.append(i._bounding_box._y)
+        		#wait2.append(i._found_count)
+        		#wait2.append(i._not_found_count)
+        	#print('wait2')
+        	#print(wait2)
+        	#bring = []
+        	#for j in bring_in_list:
+        		#bring.append(j._class_id)
+        		#bring.append(j._bounding_box._x)
+        		#bring.append(j._bounding_box._y)
+        		#bring.append(j._found_count)
+        		#bring.append(j._not_found_count)
+        	#print('bring')
+        	#print(bring)
+        			
+        			
         # リンクした範囲を1つにまとめる
         groups = union_find_tree.all_group_members().values()
         for items in groups:
@@ -144,8 +230,8 @@ class YoloxObjectDetectionLogic:
         for frame_object_item in frame_object_item_list:
         	frame_object = FrameObject(frame_object_item, judge_params.allow_empty_frame_count)
         	result[str(frame_object_item.detected_at)].append(frame_object)
-        count = 1
-        return result,bboxes_wait_list,bring_in_list,count
+        	
+        return result,start_item_list,bring_in_list,wait_item_list,count
     
     @staticmethod
     def update_item(left: FrameObjectItem, right: FrameObjectItem, mask_img: np.ndarray) -> Tuple[FrameObjectItem, np.ndarray]:
