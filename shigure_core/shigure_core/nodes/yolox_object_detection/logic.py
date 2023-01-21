@@ -1,6 +1,6 @@
 from collections import defaultdict
 from typing import List, Dict, Tuple
-
+import copy
 import cv2
 import numpy as np
 
@@ -150,10 +150,10 @@ class YoloxObjectDetectionLogic:
         					bbox_item.is_exist_wait = True # その現フレームアイテムの「待機リストに存在する？」フラグをオン
         					break
         			else:
-        				bring_in_item.fhist.append(False) #最後までどれとも一致しなかったらその待機アイテムの検知履歴リストにFalseを追加
+        				wait_item.fhist.append(False) #最後までどれとも一致しなかったらその待機アイテムの検知履歴リストにFalseを追加
         				
         			if len(wait_item.fhist) >= FHIST_SIZE: # その待機アイテムの検知履歴が十分に溜まっていたら
-        				found_rate = sum(bring_in_item.fhist) / len(bring_in_item.fhist) # 検知率(検知履歴リスト中のTrueの存在率)を計算
+        				found_rate = sum(wait_item.fhist) / len(wait_item.fhist) # 検知率(検知履歴リスト中のTrueの存在率)を計算
         				if (found_rate < 0.3) or (found_rate > 0.7): # 検知率が30%未満 or 70%超過だったら
         					del_idx_list.append(i) # 幻だった or 持ち込みイベント発生(待機リストから削除予約)
         				if found_rate > 0.7: # 持ち込みイベント発生の場合
