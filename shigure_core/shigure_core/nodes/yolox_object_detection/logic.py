@@ -87,12 +87,46 @@ class YoloxObjectDetectionLogic:
         		start_item_list = copy.deepcopy(bbox_item_list)
         else:
         	if start_item_list:
+        		del_idx_list =[]
         		# 初期状態リストと現フレームリストを全照合
-        		for start_item in start_item_list:
+        		for i,start_item in enumerate(start_item_list):
         			for bbox_item in bbox_item_list:
         				if start_item.is_match(bbox_item):  # その初期状態アイテムと一致する現フレームアイテムがあったら
+        					start_item.fhist.append(True)
         					bbox_item.is_exist_start = True # その現フレームアイテムの「初期状態リストに存在する？」フラグをオン
         					break
+        			else:
+        				start_item.fhist.append(False)
+        				
+        			if len(start_item.fhist) >= FHIST_SIZE:
+        				found_rate = sum(start_item.fhist) / len(start_item.fhist)
+        				if found_rate < 0.3:
+        					del_idx_list.append(i)
+        					action = DetectedObjectActionEnum.TAKE_OUT
+        					item = FrameObjectItem(
+        						action,
+        						start_item._bounding_box,
+        						start_item._size,
+        						start_item._mask,
+        						start_item._found_at,
+        						start_item._class_id
+        					)
+        					frame_object_item_list.append(item)
+        					for prev_item, frame_object in prev_frame_object_dict.items():
+        						is_matched, size = prev_item.is_match(item)
+        						if is_matched:
+        							if not union_find_tree.has_item(prev_item):
+        								union_find_tree.add(prev_item)
+        								frame_object_list.remove(frame_object)
+        							if not union_find_tree.has_item(item):
+        								union_find_tree.add(item)
+        								frame_object_item_list.remove(item)
+        							union_find_tree.unite(prev_item, item)
+        				start_item.fhist = start_item.fhist[-(FHIST_SIZE-1):]
+        		if del_idx_list:
+        			for di in reversed(del_idx_list):
+        				print(di)
+        				del start_item_list[di]
         				
         	if bring_in_list:
         		del_idx_list = []
