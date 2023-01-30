@@ -163,6 +163,17 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 					ymax = bbox.ymax
 					yolox_img = cv2.rectangle(yolox_img, (x, y), (xmax, ymax), (102,204,51), thickness=3)
 					
+				for frame_obj in self.frame_object_list:
+					action_str = ''
+					action = frame_obj._item._action
+					if action == DetectedObjectActionEnum.TAKE_OUT:
+						action_str = 'TAKE_OUT'
+					else:
+						action_str = 'BRING_IN'
+					x = frame_obj._item._bounding_box._x
+					y = frame_obj._item._bounding_box._y
+					cv2.putText(result_img, f'{action_str}', (x, y),cv2.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), thickness=2)
+					
 					
 				tile_img = cv2.hconcat([yolox_img, result_img])
 				cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
