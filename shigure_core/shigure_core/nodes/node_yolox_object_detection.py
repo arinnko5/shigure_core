@@ -136,18 +136,38 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			self.detection_publisher.publish(detected_object_list)
 			if self.is_debug_mode:
-				for bbox in start_item_list:
-					bounding_box_src = bbox._bounding_box
+				result_img = color_img.copy()
+				yolox_img = color_img.copy()
+				
+				for s_item in start_item_list:
+					bounding_box_src = s_item._bounding_box
 					x, y, width, height = bounding_box_src.items
-					#color = random.choice(self._colors)
-					color = (255,140,0)
-					result_img = cv2.rectangle(color_img, (x, y), (x + width, y + height), color, thickness=3)
-					brack_img = np.zeros_like(color_img)
-					img = self.print_fps(brack_img)
-					tile_img = cv2.vconcat([result_img, img])
-					cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
-					cv2.imshow("yolox_object_detection", tile_img)
-					cv2.waitKey(1)
+					result_img = cv2.rectangle(result_img, (x, y), (x + width, y + height), (0,153,255), thickness=3)
+					#brack_img = np.zeros_like(color_img)
+					#img = self.print_fps(result_img)
+					
+				for w_item in wait_item_list:
+					bounding_box_src = w_item._bounding_box
+					x, y, width, height = bounding_box_src.items
+					result_img = cv2.rectangle(result_img, (x, y), (x + width, y + height), (255,204,102), thickness=3)
+					
+				for b_item in bring_in_list:
+					bounding_box_src = b_item._bounding_box
+					x, y, width, height = bounding_box_src.items
+					result_img = cv2.rectangle(result_img, (x, y), (x + width, y + height), (255,0,102), thickness=3)
+					
+				for bbox in yolox_bbox_src.bounding_boxes:
+					x = bbox.xmin
+					y = bbox.ymin
+					xmax = bbox.xmax
+					ymax = bbox.ymax
+					yolox_img = cv2.rectangle(yolox_img, (x, y), (xmax, ymax), (102,204,51), thickness=3)
+					
+					
+				tile_img = cv2.hconcat([yolox_img, result_img])
+				cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
+				cv2.imshow("yolox_object_detection", tile_img)
+				cv2.waitKey(1)
 			#else:
 				#print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
 				
