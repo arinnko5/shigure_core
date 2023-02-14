@@ -35,7 +35,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 		# publisher, subscriber
 		self.detection_publisher = self.create_publisher(
 			DetectedObjectList, 
-			'/shigure/yolox_object_detection', 
+			'/shigure/object_detection', 
 			10
 		)
 		yolox_bbox_subscriber = message_filters.Subscriber(
@@ -136,18 +136,49 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			self.detection_publisher.publish(detected_object_list)
 			if self.is_debug_mode:
-				for bbox in start_item_list:
-					bounding_box_src = bbox._bounding_box
+				result_img = color_img.copy()
+				yolox_img = color_img.copy()
+				
+				for s_item in start_item_list:
+					bounding_box_src = s_item._bounding_box
 					x, y, width, height = bounding_box_src.items
-					#color = random.choice(self._colors)
-					color = (255,140,0)
-					result_img = cv2.rectangle(color_img, (x, y), (x + width, y + height), color, thickness=3)
-					brack_img = np.zeros_like(color_img)
-					img = self.print_fps(brack_img)
-					tile_img = cv2.hconcat([result_img, img])
-					cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
-					cv2.imshow("yolox_object_detection", tile_img)
-					cv2.waitKey(1)
+					result_img = cv2.rectangle(result_img, (x, y), (x + width, y + height), (0,153,255), thickness=3)
+					#brack_img = np.zeros_like(color_img)
+					#img = self.print_fps(result_img)
+					
+				for w_item in wait_item_list:
+					bounding_box_src = w_item._bounding_box
+					x, y, width, height = bounding_box_src.items
+					result_img = cv2.rectangle(result_img, (x, y), (x + width, y + height), (255,204,102), thickness=3)
+					
+				for b_item in bring_in_list:
+					bounding_box_src = b_item._bounding_box
+					x, y, width, height = bounding_box_src.items
+					result_img = cv2.rectangle(result_img, (x, y), (x + width, y + height), (255,0,102), thickness=3)
+					
+				for bbox in yolox_bbox_src.bounding_boxes:
+					x = bbox.xmin
+					y = bbox.ymin
+					xmax = bbox.xmax
+					ymax = bbox.ymax
+					yolox_img = cv2.rectangle(yolox_img, (x, y), (xmax, ymax), (102,204,51), thickness=3)
+					
+				for frame_obj in self.frame_object_list:
+					action_str = ''
+					action = frame_obj._item._action
+					if action == DetectedObjectActionEnum.TAKE_OUT:
+						action_str = 'TAKE_OUT'
+					else:
+						action_str = 'BRING_IN'
+					x = frame_obj._item._bounding_box._x
+					y = frame_obj._item._bounding_box._y
+					cv2.putText(result_img, f'{action_str}', (x, y),cv2.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), thickness=2)
+					
+					
+				tile_img = cv2.hconcat([yolox_img, result_img])
+				cv2.namedWindow('yolox_object_detection', cv2.WINDOW_NORMAL)
+				cv2.imshow("yolox_object_detection", tile_img)
+				cv2.waitKey(1)
 			#else:
 				#print(f'[{datetime.datetime.now()}] fps : {self.fps}', end='\r')
 				
@@ -177,7 +208,7 @@ class YoloxObjectDetectionNode(ImagePreviewNode):
 			
 			if self.is_debug_mode:
 				item_color_img = frame.new_image if action == DetectedObjectActionEnum.BRING_IN else frame.old_image
-				print('オブジェクトが検出されました(',
+				print('イベントが検出されました(',
 					f'action: {action.value}, x: {x}, y: {y}, width: {width}, height: {height}, size: {size},class_id:{class_id})')
 				icon = np.zeros((height + 10, width, 3), dtype=np.uint8)
 				icon[0:height, 0:width, :] = item_color_img[y:y + height, x:x + width, :]
