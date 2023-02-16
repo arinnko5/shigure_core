@@ -22,7 +22,7 @@ class YoloxObjectDetectionLogic:
 
     @staticmethod
     def execute(yolox_bbox: BoundingBoxes, started_at: Timestamp, color_img:np.ndarray, frame_object_list: List[FrameObject],
-                judge_params: JudgeParams, start_item_list: List[BboxObject], bring_in_list:List[BboxObject],wait_item_list:[BboxObject] )-> Dict[str, List[FrameObject]]:
+                judge_params: JudgeParams, bring_in_list:List[BboxObject],wait_item_list:[BboxObject] )-> Dict[str, List[FrameObject]]:
         """
         物体検出ロジック
         :param yolox_bbox:
